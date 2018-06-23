@@ -8,7 +8,7 @@ import itertools
 import json
 import numpy as np
 import os
-import pydash as _
+import pydash as ps
 
 SPEC_DIR = 'slm_lab/spec'
 '''
@@ -38,29 +38,28 @@ SPEC_FORMAT = {
         "max_session": int,
         "max_trial": (type(None), int),
         "search": str,
-        "train_mode": bool,
     },
     "name": str,
 }
+logger = logger.get_logger(__name__)
 
 
 def check_comp_spec(comp_spec, comp_spec_format):
     '''Base method to check component spec'''
     for spec_k, spec_format_v in comp_spec_format.items():
         comp_spec_v = comp_spec[spec_k]
-        if _.is_list(spec_format_v):
+        if ps.is_list(spec_format_v):
             v_set = spec_format_v
-            assert comp_spec_v in v_set, f'Component spec value {_.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
+            assert comp_spec_v in v_set, f'Component spec value {ps.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
         else:
             v_type = spec_format_v
-            assert isinstance(
-                comp_spec_v, v_type), f'Component spec {_.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
+            assert isinstance(comp_spec_v, v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
 
 
 def check_body_spec(spec):
     '''Base method to check body spec for AEB space resolution'''
-    ae_product = _.get(spec, 'body.product')
-    body_num = _.get(spec, 'body.num')
+    ae_product = ps.get(spec, 'body.product')
+    body_num = ps.get(spec, 'body.num')
     if ae_product == 'outer':
         pass
     elif ae_product == 'inner':
@@ -68,15 +67,14 @@ def check_body_spec(spec):
         env_num = len(spec['env'])
         assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
     else:  # custom AEB
-        assert _.is_list(body_num)
+        assert ps.is_list(body_num)
 
 
 def check(spec):
     '''Check a single spec for validity'''
     try:
         spec_name = spec.get('name')
-        assert set(spec.keys()) >= set(SPEC_FORMAT.keys(
-        )), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
+        assert set(spec.keys()) >= set(SPEC_FORMAT.keys()), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
         for agent_spec in spec['agent']:
             check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
         for env_spec in spec['env']:
@@ -92,8 +90,7 @@ def check(spec):
 
 def check_all():
     '''Check all spec files, all specs.'''
-    spec_files = _.filter_(
-        os.listdir(SPEC_DIR), lambda f: f.endswith('.json') and not f.startswith('_'))
+    spec_files = ps.filter_(os.listdir(SPEC_DIR), lambda f: f.endswith('.json') and not f.startswith('_'))
     for spec_file in spec_files:
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
         for spec_name, spec in spec_dict.items():
@@ -103,7 +100,7 @@ def check_all():
             except Exception as e:
                 logger.exception(f'spec_file {spec_file} fails spec check')
                 raise e
-    logger.info(f'Checked all specs from: {_.join(spec_files, ",")}')
+    logger.info(f'Checked all specs from: {ps.join(spec_files, ",")}')
     return True
 
 
@@ -116,7 +113,7 @@ def get(spec_file, spec_name):
     spec = spec_util.get('base.json', 'base_case')
     '''
     spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
-    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys(), ",")}'
+    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
     spec = spec_dict[spec_name]
     spec['name'] = spec_name
     check(spec)
@@ -130,7 +127,7 @@ def is_aeb_compact(aeb_list):
     aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_list)]
     ae_compact = np.array_equal(aeb_shape, aeb_uniq)
     b_compact = True
-    for ae, ae_b_list in _.group_by(aeb_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
+    for ae, ae_b_list in ps.group_by(aeb_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
         b_shape = util.get_aeb_shape(ae_b_list)[2]
         b_uniq = [len(np.unique(col)) for col in np.transpose(ae_b_list)][2]
         b_compact = b_compact and np.array_equal(b_shape, b_uniq)
@@ -151,24 +148,21 @@ def resolve_aeb(spec):
     '''
     agent_num = len(spec['agent'])
     env_num = len(spec['env'])
-    ae_product = _.get(spec, 'body.product')
-    body_num = _.get(spec, 'body.num')
-    body_num_list = body_num if _.is_list(body_num) else [body_num] * env_num
+    ae_product = ps.get(spec, 'body.product')
+    body_num = ps.get(spec, 'body.num')
+    body_num_list = body_num if ps.is_list(body_num) else [body_num] * env_num
 
     aeb_list = []
     if ae_product == 'outer':
         for e in range(env_num):
-            sub_aeb_list = list(itertools.product(
-                range(agent_num), [e], range(body_num_list[e])))
+            sub_aeb_list = list(itertools.product(range(agent_num), [e], range(body_num_list[e])))
             aeb_list.extend(sub_aeb_list)
     elif ae_product == 'inner':
         for a, e in zip(range(agent_num), range(env_num)):
-            sub_aeb_list = list(
-                itertools.product([a], [e], range(body_num_list[e])))
+            sub_aeb_list = list(itertools.product([a], [e], range(body_num_list[e])))
             aeb_list.extend(sub_aeb_list)
     else:  # custom AEB, body_num is a aeb_list
         aeb_list = [tuple(aeb) for aeb in body_num]
     aeb_list.sort()
-    assert is_aeb_compact(
-        aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
+    assert is_aeb_compact(aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_list

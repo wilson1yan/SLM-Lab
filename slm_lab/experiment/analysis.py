@@ -9,7 +9,7 @@ import colorlover as cl
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 
 DATA_AGG_FNS = {
     't': 'sum',
@@ -21,6 +21,7 @@ FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NOISE_WINDOW = 0.05
 MA_WINDOW = 100
+logger = logger.get_logger(__name__)
 
 
 def get_session_data(session):
@@ -31,27 +32,31 @@ def get_session_data(session):
     data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
     mdp_data_names = ['t', 'epi'] + data_names
     agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
-    data_h_v_dict = {
-        data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
+    data_h_v_dict = {data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
     session_mdp_data, session_data = {}, {}
     for aeb in session.aeb_space.aeb_list:
-        data_h_dict = {
-            data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
-        # remove any incomplete session timesteps from tail (due to multienv termination)
+        data_h_dict = {data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
+        # trim back to remove any incomplete sessions due to multienv termination
         complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
-        data_len = len(complete_done_h)
-        reset_idx = np.isnan(complete_done_h)
+        # offset properly to bin separate episodes
+        reset_bin = np.concatenate([[0.], complete_done_h[:-1]])
+        data_len = len(reset_bin)
+        reset_idx = reset_bin.astype('bool')
         nonreset_idx = ~reset_idx
         data_h_dict['t'] = np.ones(reset_idx.shape)
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()
         mdp_df = pd.DataFrame({
-            data_name: data_h_dict[data_name][:data_len][nonreset_idx]
+            data_name: data_h_dict[data_name][:data_len]
             for data_name in mdp_data_names})
         mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         aeb_df.reset_index(drop=False, inplace=True)
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
     logger.debug(f'{session_data}')
+    data_size_in_bytes = util.memory_size(session_mdp_data)
+    logger.debug(f'Size of session data: {data_size_in_bytes} MB')
+    if data_size_in_bytes > 25:
+        logger.warn(f'Session data > 25 MB')
     return session_mdp_data, session_data
 
 
@@ -80,14 +85,12 @@ def calc_trial_fitness_df(trial):
     Adds a consistency dimension to fitness vector.
     '''
     trial_fitness_data = {}
-    all_session_fitness_df = pd.concat(
-        list(trial.session_data_dict.values()))
+    all_session_fitness_df = pd.concat(list(trial.session_data_dict.values()))
     for aeb in util.get_df_aeb_list(all_session_fitness_df):
         aeb_fitness_df = all_session_fitness_df.loc[:, aeb]
         aeb_fitness_sr = aeb_fitness_df.mean()
         consistency = calc_consistency(aeb_fitness_df)
-        aeb_fitness_sr = aeb_fitness_sr.append(
-            pd.Series({'consistency': consistency}))
+        aeb_fitness_sr = aeb_fitness_sr.append(pd.Series({'consistency': consistency}))
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
         aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS, axis=1)
         trial_fitness_data[aeb] = aeb_fitness_df
@@ -100,23 +103,32 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(session_spec, info_space, session_data):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    aeb_count = len(session_data)
+def get_palette(aeb_count):
+    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
         palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+    return palette
+
+
+def lower_opacity(rgb, opacity):
+    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
+
+
+def plot_session(session_spec, info_space, session_data):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
+    aeb_count = len(session_data)
+    palette = get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
-        fig_1 = viz.plot_line(
-            aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
+        fig_1 = viz.plot_line(aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
-        fig_2 = viz.plot_line(
-            aeb_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig_2 = viz.plot_line(aeb_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
         fig.append_trace(fig_2.data[0], 2, 1)
         fig.append_trace(fig_2.data[1], 3, 1)
 
@@ -127,9 +139,70 @@ def plot_session(session_spec, info_space, session_data):
     fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
     fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
-    fig.layout.update(_.pick(fig_1.layout, ['legend']))
-    fig.layout.update(
-        title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
+    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
+    fig.layout.update(title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
+    viz.plot(fig)
+    return fig
+
+
+def gather_aeb_rewards_df(aeb, session_datas):
+    '''Gather rewards from each session for a body into a df'''
+    aeb_session_rewards = {}
+    for s, session_data in session_datas.items():
+        aeb_df = session_data[aeb]
+        aeb_reward_sr = aeb_df['reward']
+        aeb_session_rewards[s] = aeb_reward_sr
+    aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
+    return aeb_rewards_df
+
+
+def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
+    '''Build the aeb_reward envelope figure'''
+    mean_sr = aeb_rewards_df.mean(axis=1)
+    std_sr = aeb_rewards_df.std(axis=1).fillna(0)
+    max_sr = mean_sr + std_sr
+    min_sr = mean_sr - std_sr
+    x = aeb_rewards_df.index.tolist()
+    max_y = max_sr.tolist()
+    min_y = min_sr.tolist()
+
+    envelope_trace = viz.go.Scatter(
+        x=x + x[::-1],
+        y=max_y + min_y[::-1],
+        fill='tozerox',
+        fillcolor=lower_opacity(color, 0.2),
+        line=dict(color='transparent'),
+        showlegend=False,
+        legendgroup=aeb_str,
+    )
+    df = pd.DataFrame({'epi': x, 'mean_reward': mean_sr})
+    fig = viz.plot_line(
+        df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
+    )
+    fig.data.append(envelope_trace)
+    return fig
+
+
+def plot_trial(trial_spec, info_space):
+    '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
+    prepath = util.get_prepath(trial_spec, info_space)
+    predir = util.prepath_to_predir(prepath)
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+
+    aeb_count = len(session_datas[0])
+    palette = get_palette(aeb_count)
+    fig = None
+    for idx, (a, e, b) in enumerate(session_datas[0]):
+        aeb = (a, e, b)
+        aeb_str = f'{a}{e}{b}'
+        color = palette[idx]
+        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas)
+        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color)
+        if fig is None:
+            fig = aeb_fig
+        else:
+            fig.data.extend(aeb_fig.data)
+    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -140,10 +213,9 @@ def plot_experiment(experiment_spec, experiment_df):
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
     y_cols = ['fitness'] + FITNESS_COLS
-    x_cols = _.difference(experiment_df.columns.tolist(), y_cols)
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
 
-    fig = viz.tools.make_subplots(
-        rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
     fitness_sr = experiment_df['fitness']
     min_fitness = fitness_sr.values.min()
     max_fitness = fitness_sr.values.max()
@@ -158,16 +230,14 @@ def plot_experiment(experiment_spec, experiment_df):
                 marker={
                     'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
                     # dump first quarter of colorscale that is too bright
-                    'cmin': min_fitness - 0.25 * (max_fitness - min_fitness), 'cmax': max_fitness,
+                    'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
                     'colorscale': 'YIGnBu', 'reversescale': True
                 },
             )
             fig.append_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(
-                title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
-    fig.layout.update(
-        title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
+    fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
     viz.plot(fig)
     return fig
 
@@ -182,7 +252,7 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
     session_data = util.session_df_to_data(session_df)
     Likewise for session_mdp_df
     '''
-    prepath = get_prepath(spec, info_space, unit='session')
+    prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
     if session_mdp_data is not None:  # not from retro analysis
         session_mdp_df = pd.concat(session_mdp_data, axis=1)
@@ -191,26 +261,23 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
         # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
         util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    # TODO replaced by plot_best_sessions until Feb 2018 https://github.com/plotly/plotly.py/issues/880
-    if os.environ.get('run_mode') == 'train':
-        viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
-def save_trial_data(spec, info_space, trial_fitness_df):
+def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = get_prepath(spec, info_space, unit='trial')
+    prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
+    viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
 
 
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = get_prepath(spec, info_space, unit='experiment')
+    prepath = util.get_prepath(spec, info_space, unit='experiment')
     logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    # TODO tmp hack
-    plot_best_sessions(experiment_df, prepath)
 
 
 def analyze_session(session, session_data=None):
@@ -225,8 +292,7 @@ def analyze_session(session, session_data=None):
         session_mdp_data = None
     session_fitness_df = calc_session_fitness_df(session, session_data)
     session_fig = plot_session(session.spec, session.info_space, session_data)
-    save_session_data(
-        session.spec, session.info_space, session_mdp_data, session_data, session_fitness_df, session_fig)
+    save_session_data(session.spec, session.info_space, session_mdp_data, session_data, session_fitness_df, session_fig)
     return session_fitness_df
 
 
@@ -237,7 +303,8 @@ def analyze_trial(trial):
     '''
     logger.info('Analyzing trial')
     trial_fitness_df = calc_trial_fitness_df(trial)
-    save_trial_data(trial.spec, trial.info_space, trial_fitness_df)
+    trial_fig = plot_trial(trial.spec, trial.info_space)
+    save_trial_data(trial.spec, trial.info_space, trial_fitness_df, trial_fig)
     return trial_fitness_df
 
 
@@ -252,42 +319,20 @@ def analyze_experiment(experiment):
     logger.info('Analyzing experiment')
     experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
     cols = FITNESS_COLS + ['fitness']
-    config_cols = sorted(_.difference(
-        experiment_df.columns.tolist(), cols))
+    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
     logger.info(f'Experiment data:\n{experiment_df}')
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    save_experiment_data(
-        experiment.spec, experiment.info_space, experiment_df, experiment_fig)
+    save_experiment_data(experiment.spec, experiment.info_space, experiment_df, experiment_fig)
     return experiment_df
-
-
-def get_prepath(spec, info_space, unit='experiment'):
-    spec_name = spec['name']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
-    prename = f'{spec_name}'
-    trial_index = info_space.get('trial')
-    session_index = info_space.get('session')
-    if unit == 'trial':
-        prename += f'_t{trial_index}'
-    elif unit == 'session':
-        prename += f'_t{trial_index}_s{session_index}'
-    prepath = f'{predir}/{prename}'
-    return prepath
 
 
 def save_spec(spec, info_space, unit='experiment'):
     '''Save spec to proper path. Called at Experiment or Trial init.'''
-    prepath = get_prepath(spec, info_space, unit)
+    prepath = util.get_prepath(spec, info_space, unit)
     util.write(spec, f'{prepath}_spec.json')
-
-
-def spec_name_from_filepath(filepath):
-    '''Get space_name from data filepath: split folder name and remove tail timestamp'''
-    spec_name = '_'.join(filepath.split('/')[1].split('_')[:-4])
-    return spec_name
 
 
 def session_data_from_file(predir, trial_index, session_index):
@@ -295,10 +340,18 @@ def session_data_from_file(predir, trial_index, session_index):
     for filename in os.listdir(predir):
         if filename.endswith(f'_t{trial_index}_s{session_index}_session_df.csv'):
             filepath = f'{predir}/{filename}'
-            session_df = util.read(
-                filepath, header=[0, 1, 2, 3], index_col=0)
+            session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
             session_data = util.session_df_to_data(session_df)
             return session_data
+
+
+def session_datas_from_file(predir, trial_spec, trial_index):
+    '''Return a dict of {session_index: session_data} for a trial'''
+    session_datas = {}
+    for s in range(trial_spec['meta']['max_session']):
+        session_data = session_data_from_file(predir, trial_index, s)
+        session_datas[s] = session_data
+    return session_datas
 
 
 def session_data_dict_from_file(predir, trial_index):
@@ -307,8 +360,7 @@ def session_data_dict_from_file(predir, trial_index):
     for filename in os.listdir(predir):
         if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
             filepath = f'{predir}/{filename}'
-            fitness_df = util.read(
-                filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
+            fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
             util.fix_multiindex_dtype(fitness_df)
             session_index = fitness_df.index[0]
             session_data_dict[session_index] = fitness_df
@@ -327,15 +379,15 @@ def trial_data_dict_from_file(predir):
     return trial_data_dict
 
 
+# TODO unify with util method
 def mock_info_space_spec(predir, trial_index=None, session_index=None):
     '''Helper for retro analysis to build mock info_space and spec'''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = spec_name_from_filepath(predir)
-    experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
+    spec_name = util.prepath_to_spec_name(predir)
+    experiment_ts = util.prepath_to_experiment_ts(predir)
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('experiment', 0)
-    spec_name = spec_name_from_filepath(predir)
     if trial_index is None:
         filepath = f'{predir}/{spec_name}_spec.json'
     else:
@@ -356,11 +408,9 @@ def retro_analyze_sessions(predir):
             tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
             trial_index, session_index = int(tn[1:]), int(sn[1:])
             # mock session
-            spec, info_space = mock_info_space_spec(
-                predir, trial_index, session_index)
+            spec, info_space = mock_info_space_spec(predir, trial_index, session_index)
             session = Session(spec, info_space)
-            session_data = session_data_from_file(
-                predir, trial_index, session_index)
+            session_data = session_data_from_file(predir, trial_index, session_index)
             analyze_session(session, session_data)
 
 
@@ -376,8 +426,7 @@ def retro_analyze_trials(predir):
             # mock trial
             spec, info_space = mock_info_space_spec(predir, trial_index)
             trial = Trial(spec, info_space)
-            session_data_dict = session_data_dict_from_file(
-                predir, trial_index)
+            session_data_dict = session_data_dict_from_file(predir, trial_index)
             trial.session_data_dict = session_data_dict
             trial_fitness_df = analyze_trial(trial)
             # write trial_data that was written from ray search
@@ -430,10 +479,9 @@ def plot_session_from_file(session_df_filepath):
     analysis.plot_session_from_file(filepath)
     '''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = spec_name_from_filepath(session_df_filepath)
+    spec_name = util.prepath_to_spec_name(session_df_filepath)
     session_spec = {'name': spec_name}
-    session_df = util.read(
-        session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
+    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
     session_data = util.session_df_to_data(session_df)
     tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
     info_space = InfoSpace()
@@ -441,17 +489,7 @@ def plot_session_from_file(session_df_filepath):
     info_space.set('trial', int(tn[1:]))
     info_space.set('session', int(sn[1:]))
     session_fig = plot_session(session_spec, info_space, session_data)
-    viz.save_image(session_fig, session_df_filepath.replace(
-        '_session_df.csv', '_session_graph.png'))
-
-
-def plot_best_sessions(experiment_df, prepath):
-    '''Plot the session graphs from the best trials.'''
-    logger.info('Plotting best sessions')
-    # TODO remove when plotly can save all
-    for trial_index in experiment_df.index[:5]:
-        session_df_filepath = f'{prepath}_t{trial_index}_s{0}_session_df.csv'
-        plot_session_from_file(session_df_filepath)
+    viz.save_image(session_fig, session_df_filepath.replace('_session_df.csv', '_session_graph.png'))
 
 
 '''
@@ -492,13 +530,11 @@ def calc_std_strength_timestep(aeb_df):
     For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
     std_strength = 1.
-    stable_idx = calc_stable_idx(
-        aeb_df, min_strength_ma=std_strength - NOISE_WINDOW)
+    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=std_strength - NOISE_WINDOW)
     if np.isnan(stable_idx):
         std_strength_timestep = np.inf
     else:
-        std_strength_timestep = aeb_df.loc[
-            stable_idx, 'total_t'] / std_strength
+        std_strength_timestep = aeb_df.loc[stable_idx, 'total_t'] / std_strength
     return std_strength_timestep
 
 
@@ -579,8 +615,7 @@ def calc_consistency(aeb_fitness_df):
         consistency = 0.
     elif len(fitness_vecs) == 2:
         # if only has 2 vectors, check norm_diff
-        diff_norm = np.linalg.norm(
-            np.diff(fitness_vecs, axis=0)) / np.linalg.norm(np.ones(len(fitness_vecs[0])))
+        diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0)) / np.linalg.norm(np.ones(len(fitness_vecs[0])))
         consistency = diff_norm <= NOISE_WINDOW
     else:
         is_outlier_arr = util.is_outlier(fitness_vecs)
@@ -607,20 +642,16 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     no_fitness_sr = pd.Series({
         'strength': 0., 'speed': 0., 'stability': 0.})
     if len(aeb_df) < MA_WINDOW:
-        logger.warn(
-            f'Run more than {MA_WINDOW} episodes to compute proper fitness')
+        logger.warn(f'Run more than {MA_WINDOW} episodes to compute proper fitness')
         return no_fitness_sr
     std = FITNESS_STD.get(env_name)
     if std is None:
         std = FITNESS_STD.get('template')
-        logger.warn(
-            f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
+        logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
     aeb_df['total_t'] = aeb_df['t'].cumsum()
-    aeb_df['strength'] = calc_strength(
-        aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
+    aeb_df['strength'] = calc_strength(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
     aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW).mean()
-    aeb_df['strength_mono_inc'] = is_noisy_mono_inc(
-        aeb_df['strength']).astype(int)
+    aeb_df['strength_mono_inc'] = is_noisy_mono_inc(aeb_df['strength']).astype(int)
 
     strength = aeb_df['strength_ma'].max()
     speed = calc_speed(aeb_df, std['std_timestep'])

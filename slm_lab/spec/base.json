@@ -7,6 +7,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -29,11 +30,10 @@
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
-      "resource": {
+      "resources": {
         "num_cpus": 4,
         "num_gpus": 0
-      },
-      "train_mode": false
+      }
     },
     "search": {
       "agent": [{
@@ -56,6 +56,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -72,19 +73,21 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "base_memory": {
     "agent": [{
       "name": "BaseMemory",
       "algorithm": {
-        "name": "Random"
+        "name": "Random",
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
-        "max_size": 5
+        "batch_size": 32,
+        "max_size": 5,
+        "use_cer": false
       },
       "net": {}
     }],
@@ -100,8 +103,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "base_on_policy_memory": {
@@ -109,11 +111,10 @@
       "name": "BaseOnPolicyMemory",
       "algorithm": {
         "name": "Random",
-        "num_epis_to_collect": 1
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "max_size": 5
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -129,8 +130,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "base_on_policy_batch_memory": {
@@ -141,8 +141,38 @@
         "training_frequency": 4
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
-        "max_size": 5
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": 10,
+      "max_episode": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
+  "base_prioritized_replay_memory": {
+    "agent": [{
+      "name": "BaseMemory",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "PrioritizedReplay",
+        "alpha": 1,
+        "epsilon": 0,
+        "batch_size": 4,
+        "max_size": 4,
+        "use_cer": false
       },
       "net": {}
     }],
@@ -170,6 +200,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -186,8 +217,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "multi_agent": {
@@ -198,6 +228,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -208,6 +239,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -224,8 +256,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "multi_env": {
@@ -236,6 +267,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -256,8 +288,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "multi_agent_multi_env": {
@@ -268,6 +299,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -278,6 +310,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -298,8 +331,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "general_outer": {
@@ -310,6 +342,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -320,6 +353,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -340,8 +374,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "general_inner": {
@@ -352,6 +385,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -362,6 +396,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -382,8 +417,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "general_custom": {
@@ -394,6 +428,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -428,8 +463,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   }
 }

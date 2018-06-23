@@ -12,7 +12,7 @@ from slm_lab.lib import logger, util, viz
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import torch
 
 
@@ -21,7 +21,7 @@ def init_thread_vars(spec, info_space, unit):
     if info_space.get(unit) is None:
         info_space.tick(unit)
     if logger.to_init(spec, info_space):
-        os.environ['PREPATH'] = analysis.get_prepath(spec, info_space)
+        os.environ['PREPATH'] = util.get_prepath(spec, info_space)
         reload(logger)
 
 
@@ -37,11 +37,13 @@ class Session:
     def __init__(self, spec, info_space=None):
         info_space = info_space or InfoSpace()
         init_thread_vars(spec, info_space, unit='session')
-        self.spec = spec
+        self.spec = deepcopy(spec)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
-        # TODO option to set rand_seed. also set np random seed
-        self.torch_rand_seed = torch.initial_seed()
+        self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
+        torch.cuda.manual_seed_all(self.random_seed)
+        torch.manual_seed(self.random_seed)
+        np.random.seed(self.random_seed)
         self.data = None
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
@@ -66,16 +68,14 @@ class Session:
         Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
         '''
         _reward_space, state_space, _done_space = self.env_space.reset()
-        self.agent_space.reset(state_space)
+        _action_space = self.agent_space.reset(state_space)  # nan action at t=0 for bookkeeping in data_space
         while True:
             end_session = self.aeb_space.tick_clocks(self)
             if end_session:
                 break
             action_space = self.agent_space.act(state_space)
-            reward_space, state_space, done_space = self.env_space.step(
-                action_space)
-            self.agent_space.update(
-                action_space, reward_space, state_space, done_space)
+            reward_space, state_space, done_space = self.env_space.step(action_space)
+            self.agent_space.update(action_space, reward_space, state_space, done_space)
 
     def run(self):
         self.run_all_episodes()
@@ -113,21 +113,16 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
-        num_cpus = _.get(self.spec['meta'],
-                         'resources.num_cpus', util.NUM_CPUS)
+        num_cpus = ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
-        if self.spec['meta']['train_mode'] and len(info_spaces) > 1:
-            session_datas = util.parallelize_fn(
-                self.init_session_and_run, info_spaces, num_cpus)
+        if util.get_lab_mode() == 'train' and len(info_spaces) > 1:
+            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, num_cpus)
         else:  # dont parallelize when debugging to allow render
-            session_datas = [
-                self.init_session_and_run(info_space) for info_space in info_spaces
-            ]
-        self.session_data_dict = {
-            data.index[0]: data for data in session_datas}
+            session_datas = [self.init_session_and_run(info_space) for info_space in info_spaces]
+        self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
         return self.data
@@ -152,7 +147,6 @@ class Experiment:
         info_space = info_space or InfoSpace()
         init_thread_vars(spec, info_space, unit='experiment')
         self.spec = spec
-        spec['meta']['train_mode'] = True
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}

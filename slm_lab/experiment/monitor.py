@@ -26,7 +26,7 @@ from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
-import pydash as _
+import pydash as ps
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [
@@ -39,6 +39,7 @@ COOR_AXES_ORDER = {
     axis: idx for idx, axis in enumerate(COOR_AXES)
 }
 COOR_DIM = len(COOR_AXES)
+logger = logger.get_logger(__name__)
 
 
 class DataSpace:
@@ -56,8 +57,7 @@ class DataSpace:
         self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
 
         self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
-        self.data_type = object if self.data_name in [
-            'state', 'action'] else np.float32
+        self.data_type = object if self.data_name in ['state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
         self.data_history = []  # index = clock.total_t
@@ -105,7 +105,11 @@ class DataSpace:
         else:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
-        self.data_history.append(self.data)
+        # Do not store states with more than 10 dimensions total. It places too much burden on the memory
+        if self.data_name == 'state' and self.data[(0, 0, 0)].size > 10:
+            self.data_history.append(np.zeros_like(self.data))
+        else:
+            self.data_history.append(self.data)
         return self.data
 
     def get(self, a=None, e=None):
@@ -199,33 +203,42 @@ class AEBSpace:
         @param {[x: [yb_idx:[body_v]]} data_v, where x, y could be a, e interchangeably.
         @returns {DataSpace} data_space (aeb is implied)
         '''
-        if _.is_string(data_name):
+        if ps.is_string(data_name):
             data_space = self.data_spaces[data_name]
             data_space.add(data_v)
             return data_space
         else:
             return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
 
+    def body_done_log(self, body):
+        '''Log the summary for a body when it is done'''
+        env = body.env
+        clock = env.clock
+        memory = body.memory
+        msg = f'Trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.2f}, total_reward: {memory.total_reward:.2f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.2f}'
+        logger.info(msg)
+
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
         from slm_lab.experiment import analysis
+        # TODO simplify below
 
-        done_space = self.data_spaces['done']
         env_dones = []
         body_end_sessions = []
         for env in self.env_space.envs:
-            clock = env.clock
-            done = env.done or clock.get('t') > env.max_timestep
+            done = env.done or env.clock.get('t') > env.max_timestep
             env_dones.append(done)
             if done:
-                done_space.data[:, env.e, :] = 1.
-                done_space.swap_data[env.e, :, :] = 1.
-                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}'
-                logger.info(msg)
-                clock.tick('epi')
+                epi = env.clock.get('epi')
+                save_this_epi = 'save_epi_frequency' in env.env_spec and (epi % env.env_spec['save_epi_frequency']) == 0
+                for body in env.nanflat_body_e:
+                    self.body_done_log(body)
+                    if epi > 0 and save_this_epi:
+                        body.agent.algorithm.save(epi=epi)
+                env.clock.tick('epi')
             else:
-                clock.tick('t')
-            env_end_session = clock.get('epi') > env.max_episode
+                env.clock.tick('t')
+            env_end_session = env.clock.get('epi') > env.max_episode
             body_end_sessions.append(env_end_session)
 
         env_early_stops = []
@@ -237,10 +250,11 @@ class AEBSpace:
                 body = self.body_space.data[aeb]
                 env_epi = body.env.clock.get('epi')
                 if env_epi > max(analysis.MA_WINDOW, body.env.max_episode / 2):
-                    aeb_fitness_sr = analysis.calc_aeb_fitness_sr(
-                        aeb_df, body.env.name)
+                    aeb_fitness_sr = analysis.calc_aeb_fitness_sr(aeb_df, body.env.name)
                     strength = aeb_fitness_sr['strength']
-                    env_early_stop = strength < analysis.NOISE_WINDOW
+                    # TODO properly trigger early stop
+                    # env_early_stop = strength < analysis.NOISE_WINDOW
+                    env_early_stop = False
                 else:
                     env_early_stop = False
                 env_early_stops.append(env_early_stop)

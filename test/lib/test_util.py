@@ -4,7 +4,7 @@ from slm_lab.lib import util
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import pytest
 
 
@@ -24,11 +24,11 @@ def test_cast_df(test_df, test_list):
 
 
 def test_cast_list(test_list, test_str):
-    assert _.is_list(test_list)
-    assert _.is_list(util.cast_list(test_list))
+    assert ps.is_list(test_list)
+    assert ps.is_list(util.cast_list(test_list))
 
-    assert not _.is_list(test_str)
-    assert _.is_list(util.cast_list(test_str))
+    assert not ps.is_list(test_str)
+    assert ps.is_list(util.cast_list(test_str))
 
 
 @pytest.mark.parametrize('d,res_d', [
@@ -140,7 +140,7 @@ def test_get_fn_list():
 
 def test_get_ts():
     ts = util.get_ts()
-    assert _.is_string(ts)
+    assert ps.is_string(ts)
     assert util.RE_FILE_TS.match(ts)
 
 
@@ -194,9 +194,9 @@ def test_nonan_all(v, isall):
 
 def test_s_get(test_agent):
     spec = util.s_get(test_agent, 'aeb_space.spec')
-    assert _.is_dict(spec)
+    assert ps.is_dict(spec)
     spec = util.s_get(test_agent, 'aeb_space').spec
-    assert _.is_dict(spec)
+    assert ps.is_dict(spec)
 
 
 def test_set_attr():
@@ -220,10 +220,10 @@ def test_smart_path():
 
 @pytest.mark.parametrize('filename,dtype', [
     ('test_df.csv', pd.DataFrame),
-    ('test_df.xls', pd.DataFrame),
+    # ('test_df.xls', pd.DataFrame),
 ])
 def test_write_read_as_df(test_df, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_df, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_df = util.read(util.smart_path(data_path))
@@ -235,7 +235,7 @@ def test_write_read_as_df(test_df, filename, dtype):
     ('test_dict.yml', dict),
 ])
 def test_write_read_as_plain_dict(test_dict, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_dict, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))
@@ -246,7 +246,7 @@ def test_write_read_as_plain_dict(test_dict, filename, dtype):
     ('test_list.json', list),
 ])
 def test_write_read_as_plain_list(test_list, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_list, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))
@@ -257,7 +257,7 @@ def test_write_read_as_plain_list(test_list, filename, dtype):
     ('test_str.txt', str),
 ])
 def test_write_read_as_plain_list(test_str, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_str, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))

@@ -11,11 +11,12 @@ Interchange agent and env for the reversed benchmark.
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import os
-import pydash as _
+import pydash as ps
 
 AGENT_TEMPLATES = util.read(f'{spec_util.SPEC_DIR}/_agent.json')
 ENV_TEMPLATES = util.read(f'{spec_util.SPEC_DIR}/_env.json')
 BENCHMARK = util.read(f'{spec_util.SPEC_DIR}/_benchmark.json')
+logger = logger.get_logger(__name__)
 
 
 def generate_specs(spec, const='agent'):
@@ -28,16 +29,15 @@ def generate_specs(spec, const='agent'):
     Interchange agent and env for the reversed benchmark.
     '''
     if const == 'agent':
-        const_name = _.get(spec, 'agent.0.algorithm.name')
+        const_name = ps.get(spec, 'agent.0.algorithm.name')
         variant = 'env'
     else:
-        const_name = _.get(spec, 'env.0.name')
+        const_name = ps.get(spec, 'env.0.name')
         variant = 'agent'
 
     filepath = f'{spec_util.SPEC_DIR}/benchmark_{const_name}.json'
     if os.path.exists(filepath):
-        logger.info(
-            f'Benchmark for {const_name} exists at {filepath} already, not overwriting.')
+        logger.info(f'Benchmark for {const_name} exists at {filepath} already, not overwriting.')
         benchmark_specs = util.read(filepath)
         return benchmark_specs
 
@@ -56,6 +56,5 @@ def generate_specs(spec, const='agent'):
         benchmark_specs[spec_name] = benchmark_spec
 
     util.write(benchmark_specs, filepath)
-    logger.info(
-        f'Benchmark for {const_name} written to {filepath}.')
+    logger.info(f'Benchmark for {const_name} written to {filepath}.')
     return benchmark_specs
