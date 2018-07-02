@@ -1,4 +1,14 @@
 {
+  "reinforce.json": {
+    "reinforce_mlp_2dball": "search",
+    "reinforce_rnn_2dball": "search",
+  },
+  "ac.json": {
+    "ac_mlp_shared_2dball": "search",
+    "ac_mlp_separate_2dball": "search",
+    "ac_rnn_shared_2dball": "search",
+    "ac_rnn_separate_2dball": "search",
+  },
   "a2c.json": {
     "a2c_mlp_shared_2dball": "search",
     "a2c_mlp_separate_2dball": "search",
