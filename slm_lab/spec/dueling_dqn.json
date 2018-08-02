@@ -163,7 +163,7 @@
       }]
     }
   },
-  "dueling_dqn_boltzmann_2dball": {
+  "dueling_dqn_boltzmann_lunar": {
     "agent": [{
       "name": "DuelingDQN",
       "algorithm": {
@@ -188,7 +188,7 @@
       },
       "net": {
         "type": "DuelingMLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -210,9 +210,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -245,7 +245,7 @@
       }]
     }
   },
-  "dueling_dqn_epsilon_greedy_2dball": {
+  "dueling_dqn_epsilon_greedy_lunar": {
     "agent": [{
       "name": "DuelingDQN",
       "algorithm": {
@@ -270,7 +270,7 @@
       },
       "net": {
         "type": "DuelingMLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -292,9 +292,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -353,7 +353,7 @@
       },
       "net": {
         "type": "DuelingMLPNet",
-        "hid_layers": [256, 128],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -377,7 +377,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 600,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {

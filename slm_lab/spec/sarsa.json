@@ -297,7 +297,7 @@
       }]
     }
   },
-  "sarsa_mlp_boltzmann_2dball": {
+  "sarsa_mlp_boltzmann_lunar": {
     "agent": [{
       "name": "SARSA",
       "algorithm": {
@@ -316,7 +316,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -335,9 +335,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -370,7 +370,7 @@
       }]
     }
   },
-  "sarsa_mlp_epsilon_greedy_2dball": {
+  "sarsa_mlp_epsilon_greedy_lunar": {
     "agent": [{
       "name": "SARSA",
       "algorithm": {
@@ -389,7 +389,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -408,9 +408,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -443,7 +443,7 @@
       }]
     }
   },
-  "sarsa_rnn_boltzmann_2dball": {
+  "sarsa_rnn_boltzmann_lunar": {
     "agent": [{
       "name": "SARSA",
       "algorithm": {
@@ -464,8 +464,8 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 32,
-        "rnn_num_layers": 1,
+        "rnn_hidden_size": 100,
+        "rnn_num_layers": 2,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -484,9 +484,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -519,7 +519,7 @@
       }]
     }
   },
-  "sarsa_rnn_epsilon_greedy_2dball": {
+  "sarsa_rnn_epsilon_greedy_lunar": {
     "agent": [{
       "name": "SARSA",
       "algorithm": {
@@ -540,8 +540,8 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 32,
-        "rnn_num_layers": 1,
+        "rnn_hidden_size": 100,
+        "rnn_num_layers": 2,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -560,9 +560,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {

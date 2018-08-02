@@ -412,7 +412,7 @@
       }]
     }
   },
-  "vanilla_dqn_2dball": {
+  "vanilla_dqn_lunar": {
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
@@ -437,7 +437,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -456,9 +456,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -491,7 +491,7 @@
       }]
     }
   },
-  "dqn_boltzmann_2dball": {
+  "dqn_boltzmann_lunar": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -516,7 +516,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -538,9 +538,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -573,7 +573,7 @@
       }]
     }
   },
-  "dqn_epsilon_greedy_2dball": {
+  "dqn_epsilon_greedy_lunar": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -598,7 +598,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -620,9 +620,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -655,7 +655,7 @@
       }]
     }
   },
-  "drqn_boltzmann_2dball": {
+  "drqn_boltzmann_lunar": {
     "agent": [{
       "name": "DRQN",
       "algorithm": {
@@ -682,8 +682,8 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 32,
-        "rnn_num_layers": 1,
+        "rnn_hidden_size": 100,
+        "rnn_num_layers": 2,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -705,9 +705,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -740,7 +740,7 @@
       }]
     }
   },
-  "drqn_epsilon_greedy_2dball": {
+  "drqn_epsilon_greedy_lunar": {
     "agent": [{
       "name": "DRQN",
       "algorithm": {
@@ -767,8 +767,8 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 32,
-        "rnn_num_layers": 1,
+        "rnn_hidden_size": 100,
+        "rnn_num_layers": 2,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -790,9 +790,9 @@
       }
     }],
     "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
-      "max_episode": 250,
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -1025,7 +1025,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 600,
+      "max_episode": 800,
       "save_epi_frequency": 1000
     }],
     "body": {
