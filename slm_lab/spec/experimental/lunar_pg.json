@@ -53,7 +53,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -145,7 +145,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -246,7 +246,7 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -348,7 +348,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -448,7 +448,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -551,7 +551,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -655,7 +655,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -754,7 +754,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -847,7 +847,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -942,7 +942,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1041,7 +1041,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1131,7 +1131,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1226,7 +1226,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1325,7 +1325,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1418,7 +1418,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1514,7 +1514,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1611,7 +1611,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1708,7 +1708,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1812,7 +1812,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -1914,7 +1914,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -2014,7 +2014,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -2111,7 +2111,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -2219,7 +2219,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -2325,7 +2325,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
