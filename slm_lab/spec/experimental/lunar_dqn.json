@@ -62,11 +62,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -77,9 +77,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
@@ -161,11 +158,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -176,9 +173,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
@@ -260,11 +254,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -275,9 +269,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
@@ -359,11 +350,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -374,9 +365,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
@@ -458,11 +446,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -473,9 +461,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
@@ -557,11 +542,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -572,9 +557,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
@@ -656,11 +638,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -671,9 +653,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
@@ -755,11 +734,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -770,9 +749,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
@@ -857,11 +833,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -953,11 +929,11 @@
     "meta": {
       "distributed": false,
       "graph_x": "total_t",
-      "max_session": 2,
-      "max_trial": 95,
+      "max_session": 4,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95,
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -968,9 +944,6 @@
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
-        },
-        "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
