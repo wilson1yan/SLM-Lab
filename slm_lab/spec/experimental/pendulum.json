@@ -64,10 +64,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 190,
+      "max_trial": 124,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -162,10 +162,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 190,
+      "max_trial": 124,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -257,10 +257,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 190,
+      "max_trial": 124,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -355,10 +355,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 190,
+      "max_trial": 124,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95
+        "num_cpus": 62,
       }
     },
     "search": {
@@ -457,10 +457,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 190,
+      "max_trial": 124,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 95
+        "num_cpus": 62,
       }
     },
     "search": {
