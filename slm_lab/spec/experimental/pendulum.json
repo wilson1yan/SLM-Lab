@@ -9,12 +9,12 @@
         "explore_var_spec": null,
         "gamma": 0.95,
         "use_gae": true,
-        "lam": 0.97,
+        "lam": 0.956,
         "use_nstep": false,
         "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
+          "start_val": 0.02,
           "end_val": 0.001,
           "start_step": 60000,
           "end_step": 120000,
@@ -31,13 +31,13 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.005
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
@@ -54,7 +54,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 500000,
+      "max_total_t": 300000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -74,21 +74,24 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 3, 4],
+          "training_frequency__choice": [2, 3],
+          "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.95, 0.99],
           "entropy_coef_spec": {
-            "start_val__uniform": [0.001, 0.05],
-            "end_val__uniform": [0.0001, 0.001],
-            "start_step__choice": [100000, 125000, 150000],
-            "end_step__choice": [150000, 175000, 200000, 250000],
+            "start_step__choice": [75000, 100000, 125000, 150000],
+            "end_step__choice": [175000, 200000, 250000],
           },
         },
         "net": {
-          "hid_layers__choice": [[400, 200], [256, 128]],
-          "actor_optim_spec": {
-           "lr__choice": [0.0001, 0.0005, 0.001, 0.005, 0.01]
-         },
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [100000],
+              [150000],
+              [200000],
+              [100000, 150000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5, 0.9]
+          },
         }
       }]
     }
@@ -103,12 +106,12 @@
         "explore_var_spec": null,
         "gamma": 0.95,
         "use_gae": true,
-        "lam": 0.97,
+        "lam": 0.956,
         "use_nstep": false,
         "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
+          "start_val": 0.02,
           "end_val": 0.001,
           "start_step": 60000,
           "end_step": 120000,
@@ -135,7 +138,7 @@
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.005
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
@@ -152,7 +155,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 500000,
+      "max_total_t": 300000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -172,22 +175,25 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 3, 4],
+          "training_frequency__choice": [2, 3],
+          "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.95, 0.99],
           "entropy_coef_spec": {
-            "start_val__uniform": [0.001, 0.05],
-            "end_val__uniform": [0.0001, 0.001],
-            "start_step__choice": [100000, 125000, 150000],
-            "end_step__choice": [150000, 175000, 200000, 250000],
+            "start_step__choice": [75000, 100000, 125000, 150000],
+            "end_step__choice": [175000, 200000, 250000],
           },
         },
         "net": {
-          "rnn_hidden_size__choice": [32, 64, 128],
           "seq_len__choice": [2, 3, 4, 5, 6],
-          "actor_optim_spec": {
-           "lr__choice": [0.0001, 0.0005, 0.001, 0.005, 0.01]
-         },
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [100000],
+              [150000],
+              [200000],
+              [100000, 150000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5, 0.9]
+          },
         }
       }]
     }
@@ -202,12 +208,12 @@
         "explore_var_spec": null,
         "gamma": 0.95,
         "use_gae": false,
-        "lam": 0.97,
+        "lam": 0.956,
         "use_nstep": true,
         "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
+          "start_val": 0.02,
           "end_val": 0.001,
           "start_step": 60000,
           "end_step": 120000,
@@ -224,13 +230,13 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.005
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
@@ -247,7 +253,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 500000,
+      "max_total_t": 300000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -267,21 +273,24 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 3, 4],
-          "num_step_returns__choice": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          "training_frequency__choice": [2, 3],
+          "training_epoch__choice": [2, 4, 8],
+          "num_step_returns__choice": [1, 2, 3, 5, 10],
           "entropy_coef_spec": {
-            "start_val__uniform": [0.001, 0.05],
-            "end_val__uniform": [0.0001, 0.001],
-            "start_step__choice": [100000, 125000, 150000],
-            "end_step__choice": [150000, 175000, 200000, 250000],
+            "start_step__choice": [75000, 100000, 125000, 150000],
+            "end_step__choice": [175000, 200000, 250000],
           },
         },
         "net": {
-          "hid_layers__choice": [[400, 200], [256, 128]],
-          "actor_optim_spec": {
-           "lr__choice": [0.0001, 0.0005, 0.001, 0.005, 0.01]
-         },
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [100000],
+              [150000],
+              [200000],
+              [100000, 150000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5, 0.9]
+          },
         }
       }]
     }
@@ -296,12 +305,12 @@
         "explore_var_spec": null,
         "gamma": 0.95,
         "use_gae": false,
-        "lam": 0.97,
+        "lam": 0.956,
         "use_nstep": true,
         "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
+          "start_val": 0.02,
           "end_val": 0.001,
           "start_step": 60000,
           "end_step": 120000,
@@ -328,7 +337,7 @@
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.005
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
@@ -345,7 +354,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 500000,
+      "max_total_t": 300000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -365,22 +374,25 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 3, 4],
-          "num_step_returns__choice": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          "training_frequency__choice": [2, 3],
+          "training_epoch__choice": [2, 4, 8],
+          "num_step_returns__choice": [1, 2, 3, 5, 10],
           "entropy_coef_spec": {
-            "start_val__uniform": [0.001, 0.05],
-            "end_val__uniform": [0.0001, 0.001],
-            "start_step__choice": [100000, 125000, 150000],
-            "end_step__choice": [150000, 175000, 200000, 250000],
+            "start_step__choice": [75000, 100000, 125000, 150000],
+            "end_step__choice": [175000, 200000, 250000],
           },
         },
         "net": {
-          "rnn_hidden_size__choice": [32, 64, 128],
           "seq_len__choice": [2, 3, 4, 5, 6],
-          "actor_optim_spec": {
-           "lr__choice": [0.0001, 0.0005, 0.001, 0.005, 0.01]
-         },
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [100000],
+              [150000],
+              [200000],
+              [100000, 150000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5, 0.9]
+          },
         }
       }]
     }
@@ -395,12 +407,12 @@
         "explore_var_spec": null,
         "gamma": 0.95,
         "use_gae": true,
-        "lam": 0.97,
+        "lam": 0.956,
         "use_nstep": false,
         "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
+          "start_val": 0.02,
           "end_val": 0.001,
           "start_step": 60000,
           "end_step": 120000,
@@ -424,13 +436,13 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
@@ -447,7 +459,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 500000,
+      "max_total_t": 300000,
       "save_frequency": 25000,
     }],
     "body": {
