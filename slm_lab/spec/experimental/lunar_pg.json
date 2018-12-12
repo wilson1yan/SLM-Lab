@@ -81,6 +81,9 @@
             ],
             "gamma__choice": [0.1, 0.25]
           },
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
+          },
         }
       }]
     }
@@ -170,6 +173,9 @@
               [50000]
             ],
             "gamma__choice": [0.1, 0.25]
+          },
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
           },
         }
       }]
@@ -267,6 +273,9 @@
               [50000]
             ],
             "gamma__choice": [0.1, 0.25]
+          },
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
           },
         }
       }]
@@ -368,6 +377,9 @@
             ],
             "gamma__choice": [0.1, 0.25]
           },
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
+          },
         }
       }]
     }
@@ -463,6 +475,9 @@
               [50000]
             ],
             "gamma__choice": [0.1, 0.25]
+          },
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
           },
         }
       }]
@@ -563,6 +578,9 @@
               [50000]
             ],
             "gamma__choice": [0.1, 0.25]
+          },
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
           },
         }
       }]
