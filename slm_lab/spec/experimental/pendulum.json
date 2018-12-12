@@ -83,6 +83,7 @@
           },
         },
         "net": {
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [100000],
@@ -184,6 +185,7 @@
           },
         },
         "net": {
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
           "seq_len__choice": [2, 3, 4, 5, 6],
           "lr_scheduler_spec": {
             "milestones__choice": [
@@ -282,6 +284,7 @@
           },
         },
         "net": {
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [100000],
@@ -383,6 +386,7 @@
           },
         },
         "net": {
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
           "seq_len__choice": [2, 3, 4, 5, 6],
           "lr_scheduler_spec": {
             "milestones__choice": [
