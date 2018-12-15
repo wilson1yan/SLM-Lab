@@ -21,6 +21,7 @@ FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 # TODO improve to make it work with any reward mean
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NOISE_WINDOW = 0.05
+NORM_ORDER = 1  # use L1 norm in fitness vector norm
 MA_WINDOW = 100
 logger = logger.get_logger(__name__)
 
@@ -147,7 +148,7 @@ def calc_consistency(aeb_fitness_df):
         consistency = 0.
     elif len(fitness_vecs) == 2:
         # if only has 2 vectors, check norm_diff
-        diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0)) / np.linalg.norm(np.ones(len(fitness_vecs[0])))
+        diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0), NORM_ORDER) / np.linalg.norm(np.ones(len(fitness_vecs[0])), NORM_ORDER)
         consistency = diff_norm <= NOISE_WINDOW
     else:
         is_outlier_arr = util.is_outlier(fitness_vecs)
@@ -165,14 +166,14 @@ def calc_epi_reward_ma(aeb_df):
 def calc_fitness(fitness_vec):
     '''
     Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness
-    L2 norm because it diminishes lower values but amplifies higher values for comparison.
+    use L1 norm for simplicity and intuititveness of linearity
     '''
     if isinstance(fitness_vec, pd.Series):
         fitness_vec = fitness_vec.values
     elif isinstance(fitness_vec, pd.DataFrame):
         fitness_vec = fitness_vec.iloc[0].values
     std_fitness_vector = np.ones(len(fitness_vec))
-    fitness = np.linalg.norm(fitness_vec) / np.linalg.norm(std_fitness_vector)
+    fitness = np.linalg.norm(fitness_vec, NORM_ORDER) / np.linalg.norm(std_fitness_vector, NORM_ORDER)
     return fitness
 
 
@@ -472,7 +473,7 @@ def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    if util.get_lab_mode() == 'train':
+    if util.get_lab_mode() == ('train', 'eval'):
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
