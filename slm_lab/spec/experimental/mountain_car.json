@@ -14,8 +14,8 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
+          "start_step": 100000,
+          "end_step": 300000,
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -29,21 +29,21 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "gpu": false
@@ -52,8 +52,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 2600,
-      "save_frequency": 3000
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -62,7 +62,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -72,20 +72,18 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
+          "entropy_coef_spec": {
+            "end_step__choice": [150000, 175000, 200000, 225000, 250000]
+          },
+          "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [2, 4, 8],
-          "lam__uniform": [0.9, 0.99]
+          "lam__uniform": [0.8, 1.0],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          }
         }
       }]
     }
@@ -105,8 +103,8 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
+          "start_step": 100000,
+          "end_step": 300000,
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -121,29 +119,29 @@
         "type": "RecurrentNet",
         "shared": false,
         "cell_type": "GRU",
-        "fc_hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "fc_hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "gpu": false
@@ -152,8 +150,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 2600,
-      "save_frequency": 3000
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -162,7 +160,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -172,23 +170,18 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
+          "entropy_coef_spec": {
+            "end_step__choice": [150000, 175000, 200000, 225000, 250000]
+          },
+          "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [2, 4, 8],
-          "lam__uniform": [0.9, 0.99],
+          "lam__uniform": [0.8, 1.0],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[], [100], [200]],
-          "rnn_hidden_size__choice": [32, 64, 128],
-          "seq_len__choice": [2, 3, 4, 5, 6],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          }
         }
       }]
     }
@@ -208,8 +201,8 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
+          "start_step": 100000,
+          "end_step": 300000,
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -223,21 +216,21 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "gpu": false
@@ -246,8 +239,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 2600,
-      "save_frequency": 3000
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -256,7 +249,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -266,21 +259,18 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
+          "entropy_coef_spec": {
+            "end_step__choice": [150000, 175000, 200000, 225000, 250000]
+          },
+          "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [2, 4, 8],
-          "num_step_returns__choice": [2, 4, 8]
+          "num_step_returns__choice": [1, 2, 3, 5, 10],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          }
         }
       }]
     }
@@ -300,8 +290,8 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
+          "start_step": 100000,
+          "end_step": 300000,
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -316,24 +306,24 @@
         "type": "RecurrentNet",
         "shared": false,
         "cell_type": "GRU",
-        "fc_hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "fc_hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "gpu": false
@@ -342,8 +332,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 2600,
-      "save_frequency": 3000
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -352,7 +342,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -362,23 +352,18 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "training_frequency__choice": [2, 4, 8],
+          "entropy_coef_spec": {
+            "end_step__choice": [150000, 175000, 200000, 225000, 250000]
+          },
+          "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [2, 4, 8],
-          "lam__uniform": [0.9, 0.99],
+          "num_step_returns__choice": [1, 2, 3, 5, 10],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[], [100], [200]],
-          "rnn_hidden_size__choice": [32, 64, 128],
-          "seq_len__choice": [2, 3, 4, 5, 6],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          }
         }
       }]
     }
@@ -393,7 +378,7 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 5.0,
-          "end_val": 1.0,
+          "end_val": 0.05,
           "start_step": 0,
           "end_step": 80000,
         },
@@ -413,7 +398,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [200, 100],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -421,25 +406,24 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.006
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
         "gpu": false,
-        "training_epoch": 2
       }
     }],
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 1400,
-      "save_frequency": 1600
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -448,7 +432,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -459,17 +443,18 @@
         "algorithm": {
           "normalize_state__choice": [true, false],
           "explore_var_spec": {
-            "end_step__choice": [20000, 40000, 80000]
-          }
+            "end_step__choice": [20000, 40000, 80000, 100000, 120000]
+          },
+          "training_epoch__choice": [2, 4, 8],
+          "training_batch_epoch": [2, 3, 4],
+        },
+        "memory": {
+          "batch_size__choice": [32, 64, 128],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "polyak_coef__uniform": [0.8, 1.0],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
         }
       }]
@@ -485,9 +470,9 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 5.0,
-          "end_val": 1.0,
+          "end_val": 0.05,
           "start_step": 0,
-          "end_step": 40000,
+          "end_step": 80000,
         },
         "gamma": 0.999,
         "training_batch_epoch": 3,
@@ -506,8 +491,8 @@
       "net": {
         "type": "RecurrentNet",
         "cell_type": "GRU",
-        "fc_hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "fc_hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
@@ -517,11 +502,11 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "update_type": "polyak",
@@ -533,8 +518,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 1400,
-      "save_frequency": 1600
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -543,7 +528,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -554,19 +539,18 @@
         "algorithm": {
           "normalize_state__choice": [true, false],
           "explore_var_spec": {
-            "end_step__choice": [20000, 40000, 80000]
-          }
+            "end_step__choice": [20000, 40000, 80000, 100000, 120000]
+          },
+          "training_epoch__choice": [2, 4, 8],
+          "training_batch_epoch": [2, 3, 4],
+        },
+        "memory": {
+          "batch_size__choice": [32, 64, 128],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "polyak_coef__uniform": [0.8, 1.0],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[], [100], [200]],
-          "rnn_hidden_size__choice": [32, 64, 128],
-          "seq_len__choice": [2, 3, 4, 5, 6],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
         }
       }]
@@ -582,9 +566,9 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 5.0,
-          "end_val": 1.0,
+          "end_val": 0.05,
           "start_step": 0,
-          "end_step": 40000,
+          "end_step": 80000,
         },
         "gamma": 0.999,
         "training_batch_epoch": 4,
@@ -602,7 +586,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [200, 100],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -610,11 +594,11 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.004
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "update_type": "polyak",
@@ -627,8 +611,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 1400,
-      "save_frequency": 1600
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -637,7 +621,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -648,17 +632,18 @@
         "algorithm": {
           "normalize_state__choice": [true, false],
           "explore_var_spec": {
-            "end_step__choice": [20000, 40000, 80000]
-          }
+            "end_step__choice": [20000, 40000, 80000, 100000, 120000]
+          },
+          "training_epoch__choice": [2, 4, 8],
+          "training_batch_epoch": [2, 3, 4],
+        },
+        "memory": {
+          "batch_size__choice": [32, 64, 128],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "polyak_coef__uniform": [0.8, 1.0],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
         }
       }]
@@ -674,9 +659,9 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 5.0,
-          "end_val": 1.0,
+          "end_val": 0.05,
           "start_step": 0,
-          "end_step": 40000,
+          "end_step": 80000,
         },
         "gamma": 0.999,
         "training_batch_epoch": 4,
@@ -695,8 +680,8 @@
       "net": {
         "type": "RecurrentNet",
         "cell_type": "GRU",
-        "fc_hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "fc_hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
@@ -706,11 +691,11 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.001,
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 160000,
+          "step_size": 50000,
           "gamma": 0.9,
         },
         "update_type": "polyak",
@@ -722,8 +707,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_epi": 1400,
-      "save_frequency": 1600
+      "max_total_t": 400000,
+      "save_frequency": 25000,
     }],
     "body": {
       "product": "outer",
@@ -732,7 +717,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -743,19 +728,18 @@
         "algorithm": {
           "normalize_state__choice": [true, false],
           "explore_var_spec": {
-            "end_step__choice": [20000, 40000, 80000]
-          }
+            "end_step__choice": [20000, 40000, 80000, 100000, 120000]
+          },
+          "training_epoch__choice": [2, 4, 8],
+          "training_batch_epoch": [2, 3, 4],
+        },
+        "memory": {
+          "batch_size__choice": [32, 64, 128],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
-          "polyak_coef__uniform": [0.8, 1.0],
-          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
-          "hid_layers__choice": [[], [100], [200]],
-          "rnn_hidden_size__choice": [32, 64, 128],
-          "seq_len__choice": [2, 3, 4, 5, 6],
+          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.05]
           },
         }
       }]
