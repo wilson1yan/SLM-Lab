@@ -52,7 +52,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 300000,
+      "max_total_t": 400000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -155,7 +155,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 300000,
+      "max_total_t": 400000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -255,7 +255,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 300000,
+      "max_total_t": 400000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -358,7 +358,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 300000,
+      "max_total_t": 400000,
       "save_frequency": 20000,
     }],
     "body": {
@@ -465,7 +465,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_total_t": 300000,
+      "max_total_t": 400000,
       "save_frequency": 25000,
     }],
     "body": {
