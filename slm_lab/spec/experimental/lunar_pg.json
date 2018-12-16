@@ -219,7 +219,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.00778,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -320,7 +320,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -416,7 +416,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -516,7 +516,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -617,7 +617,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -716,7 +716,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -807,7 +807,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -896,11 +896,11 @@
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.008,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.782
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -997,7 +997,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1085,7 +1085,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1174,11 +1174,11 @@
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.008,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.782
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1275,7 +1275,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1368,7 +1368,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1464,7 +1464,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1559,7 +1559,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1654,7 +1654,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1756,7 +1756,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1856,7 +1856,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -1956,7 +1956,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -2053,7 +2053,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -2161,7 +2161,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -2267,7 +2267,7 @@
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0078,
+          "lr": 0.008,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
