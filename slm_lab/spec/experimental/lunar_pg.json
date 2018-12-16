@@ -64,14 +64,13 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_val__choice": [0.008, 0.009, 0.01],
             "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000],
+            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
           },
           "training_epoch__choice": [4, 6, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
@@ -157,14 +156,13 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_val__choice": [0.008, 0.009, 0.01],
             "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000],
+            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
           },
           "training_epoch__choice": [4, 6, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
@@ -255,14 +253,13 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_val__choice": [0.008, 0.009, 0.01],
             "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000],
+            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
           },
           "training_epoch__choice": [4, 6, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
@@ -356,14 +353,13 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_val__choice": [0.008, 0.009, 0.01],
             "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000],
+            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
           },
           "training_epoch__choice": [4, 6, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
@@ -453,14 +449,13 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_val__choice": [0.008, 0.009, 0.01],
             "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000],
+            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
           },
           "training_epoch__choice": [4, 6, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
@@ -554,14 +549,13 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_val__choice": [0.008, 0.009, 0.01],
             "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000],
+            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
           },
           "training_epoch__choice": [4, 6, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
+          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
