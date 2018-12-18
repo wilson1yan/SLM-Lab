@@ -213,6 +213,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -224,7 +225,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [80000],
-          "gamma": 0.1,
+          "gamma": 0.25,
         },
         "gpu": true
       }
@@ -253,21 +254,23 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
           },
-          "training_epoch__choice": [4, 6, 8],
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
               [40000],
               [45000],
-              [50000]
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000]
             ],
-            "gamma__choice": [0.1, 0.25]
           },
           "actor_optim_spec": {
             "name__choice": ["Adam", "RMSprop"],
@@ -314,6 +317,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -325,7 +329,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [80000],
-          "gamma": 0.9,
+          "gamma": 0.25,
         },
         "gpu": true
       }
@@ -353,21 +357,23 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
           },
-          "training_epoch__choice": [4, 6, 8],
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
               [40000],
               [45000],
-              [50000]
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000]
             ],
-            "gamma__choice": [0.1, 0.25]
           },
           "actor_optim_spec": {
             "name__choice": ["Adam", "RMSprop"],
@@ -410,6 +416,7 @@
         "hid_layers_activation": "tanh",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -421,7 +428,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [80000],
-          "gamma": 0.9,
+          "gamma": 0.25,
         },
         "gpu": true
       }
@@ -449,21 +456,23 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
           },
-          "training_epoch__choice": [4, 6, 8],
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
               [40000],
               [45000],
-              [50000]
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000]
             ],
-            "gamma__choice": [0.1, 0.25]
           },
           "actor_optim_spec": {
             "name__choice": ["Adam", "RMSprop"],
@@ -510,6 +519,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -521,7 +531,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [80000],
-          "gamma": 0.9,
+          "gamma": 0.25,
         },
         "gpu": true
       }
@@ -549,21 +559,23 @@
       "agent": [{
         "algorithm": {
           "entropy_coef_spec": {
-            "start_step__choice": [30000, 40000],
-            "end_step__choice": [45000, 50000, 55000, 60000, 70000],
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
           },
-          "training_epoch__choice": [4, 6, 8],
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [35000],
               [40000],
               [45000],
-              [50000]
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000]
             ],
-            "gamma__choice": [0.1, 0.25]
           },
           "actor_optim_spec": {
             "name__choice": ["Adam", "RMSprop"],
@@ -611,6 +623,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -622,7 +635,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [80000],
-          "gamma": 0.9,
+          "gamma": 0.25,
         },
         "gpu": true
       }
@@ -710,6 +723,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -801,6 +815,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -894,6 +909,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -991,6 +1007,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1079,6 +1096,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1172,6 +1190,7 @@
         "hid_layers_activation": "tanh",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1269,6 +1288,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1362,6 +1382,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1458,6 +1479,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1553,6 +1575,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1648,6 +1671,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1750,6 +1774,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1850,6 +1875,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -1950,6 +1976,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -2047,6 +2074,7 @@
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -2155,6 +2183,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
@@ -2261,6 +2290,7 @@
         "seq_len": 4,
         "clip_grad_val": null,
         "use_same_optim": false,
+        "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.008,
