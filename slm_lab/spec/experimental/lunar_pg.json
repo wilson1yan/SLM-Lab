@@ -610,7 +610,7 @@
         },
         "val_loss_coef": 0.1,
         "training_frequency": 2,
-        "training_epoch": 8,
+        "training_epoch": 4,
         "normalize_state": true
       },
       "memory": {
@@ -622,7 +622,7 @@
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "init_fn": null,
         "actor_optim_spec": {
           "name": "Adam",
@@ -637,7 +637,7 @@
           "milestones": [80000],
           "gamma": 0.25,
         },
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -653,7 +653,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -662,20 +662,31 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "clip_eps__uniform": [0.1, 1.0],
           "entropy_coef_spec": {
-            "start_val__uniform": [0.01, 1.0],
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
           },
-          "val_loss_coef__uniform": [0.01, 1.0]
+          "clip_eps_spec": {
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
+          },
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
         },
         "net": {
-          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
-          "actor_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [35000],
+              [40000],
+              [45000],
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000]
+            ],
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
-          }
+          "actor_optim_spec": {
+            "name__choice": ["Adam", "RMSprop"],
+          },
         }
       }]
     }
