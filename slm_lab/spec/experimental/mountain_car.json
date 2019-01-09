@@ -42,8 +42,8 @@
           "lr": 0.001,
         },
         "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 50000,
+          "name": "MultiStepLR",
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": false
@@ -52,7 +52,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -63,7 +63,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -81,9 +81,19 @@
           "lam__uniform": [0.8, 1.0],
         },
         "net": {
-          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.05]
+            "lr__uniform": [0.001, 0.01]
           },
         }
       }]
@@ -136,13 +146,8 @@
           "lr": 0.001,
         },
         "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 50000,
-          "gamma": 0.9,
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 50000,
+          "name": "MultiStepLR",
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": false
@@ -151,7 +156,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -162,7 +167,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -180,9 +185,19 @@
           "lam__uniform": [0.8, 1.0],
         },
         "net": {
-          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.05]
+            "lr__uniform": [0.001, 0.01]
           },
         }
       }]
@@ -231,8 +246,8 @@
           "lr": 0.001,
         },
         "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 50000,
+          "name": "MultiStepLR",
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": false
@@ -241,7 +256,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -252,7 +267,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -270,9 +285,19 @@
           "num_step_returns__choice": [1, 2, 3, 5, 10],
         },
         "net": {
-          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.05]
+            "lr__uniform": [0.001, 0.01]
           },
         }
       }]
@@ -325,8 +350,8 @@
           "lr": 0.001,
         },
         "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 50000,
+          "name": "MultiStepLR",
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": false
@@ -335,7 +360,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -346,7 +371,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -364,9 +389,19 @@
           "num_step_returns__choice": [1, 2, 3, 5, 10],
         },
         "net": {
-          "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.05]
+            "lr__uniform": [0.001, 0.01]
           },
         }
       }]
@@ -426,7 +461,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -437,7 +472,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -523,7 +558,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -534,7 +569,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -617,7 +652,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -628,7 +663,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -714,7 +749,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 400000,
+      "max_tick": 600000,
       "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
@@ -725,7 +760,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 190,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -748,6 +783,223 @@
           "polyak_coef__choice": [0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
             "lr__uniform": [0.001, 0.05]
+          },
+        }
+      }]
+    }
+  },
+  "ppo_mlp_separate_mountain": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.993,
+        "lam": 0.921,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "val_loss_coef": 0.1,
+        "training_frequency": 2,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": null,
+        "use_same_optim": true,
+        "init_fn": null,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.008,
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.008,
+        },
+        "lr_scheduler_spec": {
+          "name": "MultiStepLR",
+          "milestones": [80000],
+          "gamma": 0.25,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_tick_unit": "total_t",
+      "max_tick": 600000,
+      "save_frequency": 20000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 190,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "entropy_coef_spec": {
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
+          },
+          "clip_eps_spec": {
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
+          },
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
+        },
+        "net": {
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01],
+          },
+        }
+      }]
+    }
+  },
+  "ppo_rnn_separate_mountain": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.993,
+        "lam": 0.921,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "val_loss_coef": 0.1,
+        "training_frequency": 2,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicySeqReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "use_same_optim": true,
+        "init_fn": null,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.008,
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.008,
+        },
+        "lr_scheduler_spec": {
+          "name": "MultiStepLR",
+          "milestones": [80000],
+          "gamma": 0.25,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_tick_unit": "total_t",
+      "max_tick": 600000,
+      "save_frequency": 20000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 190,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "entropy_coef_spec": {
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
+          },
+          "clip_eps_spec": {
+            "end_step__choice": [50000, 60000, 70000, 80000, 90000],
+          },
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [3, 4, 5, 6, 7, 8],
+        },
+        "net": {
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01],
           },
         }
       }]
