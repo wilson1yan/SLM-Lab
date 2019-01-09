@@ -930,7 +930,7 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
