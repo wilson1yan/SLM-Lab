@@ -599,7 +599,6 @@
           },
         },
         "net": {
-          "init_fn__choice": [null, "xavier_uniform_", "orthogonal_", "uniform_"],
           "lr_scheduler_spec": {
             "milestones__choice": [
               [100000],
@@ -607,10 +606,121 @@
               [200000],
               [100000, 150000]
             ],
-            "gamma__choice": [0.1, 0.25, 0.5, 0.9]
+            "gamma__uniform": [0.1, 0.9]
           },
           "actor_optim_spec": {
-            "name__choice": ["Adam", "RMSprop"],
+            "lr__uniform": [0.001, 0.01],
+          },
+        }
+      }]
+    }
+  },
+  "ppo_rnn_separate_pendulum": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.97,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.1,
+          "end_val": 0.01,
+          "start_step": 60000,
+          "end_step": 120000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.02,
+          "end_val": 0.001,
+          "start_step": 60000,
+          "end_step": 120000,
+        },
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicySeqReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "use_same_optim": true,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.001
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.001
+        },
+        "lr_scheduler_spec": {
+          "name": "MultiStepLR",
+          "milestones": [80000],
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
+      "save_frequency": 20000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 190,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 3],
+          "training_epoch__choice": [2, 4, 8],
+          "lam__uniform": [0.95, 0.99],
+          "entropy_coef_spec": {
+            "start_step__choice": [75000, 100000, 125000, 150000],
+            "end_step__choice": [175000, 200000, 250000],
+          },
+          "clip_eps_spec": {
+            "start_step__choice": [50000, 75000, 100000],
+            "end_step__choice": [150000, 175000, 200000, 250000],
+          },
+        },
+        "net": {
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [100000],
+              [150000],
+              [200000],
+              [100000, 150000]
+            ],
+            "gamma__uniform": [0.1, 0.9]
+          },
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01],
           },
         }
       }]
