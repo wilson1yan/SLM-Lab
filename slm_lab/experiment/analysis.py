@@ -4,19 +4,15 @@ Handles the analyses of the info and data space for experiment evaluation and de
 '''
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
-from slm_lab.lib import logger, util, viz
+from slm_lab.lib import logger, math_util, util, viz
+from slm_lab.spec import spec_util
 import numpy as np
 import os
 import pandas as pd
 import pydash as ps
+import regex as re
 import shutil
 
-DATA_AGG_FNS = {
-    't': 'sum',
-    'reward': 'sum',
-    'loss': 'mean',
-    'explore_var': 'mean',
-}
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 # TODO improve to make it work with any reward mean
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
@@ -151,7 +147,7 @@ def calc_consistency(aeb_fitness_df):
         diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0), NORM_ORDER) / np.linalg.norm(np.ones(len(fitness_vecs[0])), NORM_ORDER)
         consistency = diff_norm <= NOISE_WINDOW
     else:
-        is_outlier_arr = util.is_outlier(fitness_vecs)
+        is_outlier_arr = math_util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
     return consistency
 
@@ -188,7 +184,6 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     if std is None:
         std = FITNESS_STD.get('template')
         logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
-    aeb_df['total_t'] = aeb_df['t'].cumsum()
     aeb_df['strength'] = calc_strength(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
     aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW).mean()
     aeb_df['strength_mono_inc'] = is_noisy_mono_inc(aeb_df['strength']).astype(int)
@@ -208,13 +203,13 @@ Checkpoint and early termination analysis
 
 def get_reward_mas(agent, name='current_reward_ma'):
     '''Return array of the named reward_ma for all of an agent's bodies.'''
-    bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
     return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
 
 
 def get_std_epi_rewards(agent):
     '''Return array of std_epi_reward for each of the environments.'''
-    bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
     return np.array([ps.get(FITNESS_STD, f'{body.env.name}.std_epi_reward') for body in bodies], dtype=np.float16)
 
 
@@ -224,7 +219,7 @@ def new_best(agent):
     current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
     new_best = (current_reward_mas >= best_reward_mas).all()
     if new_best:
-        bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+        bodies = getattr(agent, 'nanflat_body_a', [agent.body])
         for body in bodies:
             body.best_reward_ma = body.current_reward_ma
     return new_best
@@ -325,22 +320,22 @@ def is_unfit(fitness_df, session):
 
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    graph_x = session_spec['meta'].get('graph_x', 'epi')
+    max_tick_unit = ps.get(session_spec, 'env.0.max_tick_unit')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
-    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
+    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
         aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward', graph_x, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig_1 = viz.plot_line(aeb_df, 'reward', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
-        fig_2 = viz.plot_line(aeb_df, ['loss'], graph_x, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig_2 = viz.plot_line(aeb_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
         fig.append_trace(fig_2.data[0], 2, 1)
         fig.append_trace(fig_2.data[1], 3, 1)
 
-    fig.layout['xaxis1'].update(title=graph_x, zerolinewidth=1)
+    fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
     fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
     fig.layout['yaxis1'].update(domain=[0.55, 1])
     fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
@@ -353,18 +348,22 @@ def plot_session(session_spec, info_space, session_data):
     return fig
 
 
-def gather_aeb_rewards_df(aeb, session_datas):
+def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
     '''Gather rewards from each session for a body into a df'''
     aeb_session_rewards = {}
     for s, session_data in session_datas.items():
         aeb_df = session_data[aeb]
         aeb_reward_sr = aeb_df['reward']
+        aeb_reward_sr.index = aeb_df[max_tick_unit]
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            # guard for eval appending possibly not ordered
+            aeb_reward_sr.sort_index(inplace=True)
         aeb_session_rewards[s] = aeb_reward_sr
     aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
     return aeb_rewards_df
 
 
-def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
+def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit):
     '''Build the aeb_reward envelope figure'''
     mean_sr = aeb_rewards_df.mean(axis=1)
     std_sr = aeb_rewards_df.std(axis=1).fillna(0)
@@ -383,12 +382,31 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
         showlegend=False,
         legendgroup=aeb_str,
     )
-    df = pd.DataFrame({'epi': x, 'mean_reward': mean_sr})
+    df = pd.DataFrame({max_tick_unit: x, 'mean_reward': mean_sr})
     fig = viz.plot_line(
-        df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
+        df, ['mean_reward'], [max_tick_unit], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
     )
     fig.add_traces([envelope_trace])
     return fig
+
+
+def calc_trial_df(trial_spec, info_space):
+    '''Calculate trial_df as mean of all session_df'''
+    prepath = util.get_prepath(trial_spec, info_space)
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
+    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
+    for s, session_data in session_datas.items():
+        for aeb, aeb_df in session_data.items():
+            aeb_transpose[aeb].append(aeb_df.sort_values(by=[max_tick_unit]).set_index(max_tick_unit, drop=False))
+
+    trial_data = {}
+    for aeb, df_list in aeb_transpose.items():
+        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop='True')
+
+    trial_df = pd.concat(trial_data, axis=1)
+    return trial_df
 
 
 def plot_trial(trial_spec, info_space):
@@ -396,21 +414,22 @@ def plot_trial(trial_spec, info_space):
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
-
-    aeb_count = len(session_datas[0])
+    rand_session_data = session_datas[list(session_datas.keys())[0]]
+    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
+    aeb_count = len(rand_session_data)
     palette = viz.get_palette(aeb_count)
     fig = None
-    for idx, (a, e, b) in enumerate(session_datas[0]):
+    for idx, (a, e, b) in enumerate(rand_session_data):
         aeb = (a, e, b)
         aeb_str = f'{a}{e}{b}'
         color = palette[idx]
-        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas)
-        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color)
+        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas, max_tick_unit)
+        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit)
         if fig is None:
             fig = aeb_fig
         else:
             fig.add_traces(aeb_fig.data)
-    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
+    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}, {len(session_datas)} sessions', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -423,7 +442,7 @@ def plot_experiment(experiment_spec, experiment_df):
     y_cols = ['fitness'] + FITNESS_COLS
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
 
-    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     fitness_sr = experiment_df['fitness']
     min_fitness = fitness_sr.values.min()
     max_fitness = fitness_sr.values.max()
@@ -450,30 +469,51 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
+def save_session_df(session_data, prepath, info_space):
+    '''Save session_df, and if is in eval mode, modify it and save with append'''
+    filepath = f'{prepath}_session_df.csv'
+    if util.get_lab_mode() in ('enjoy', 'eval'):
+        ckpt = util.find_ckpt(info_space.eval_model_prepath)
+        epi = int(re.search('epi(\d+)', ckpt)[1])
+        totalt = int(re.search('totalt(\d+)', ckpt)[1])
+        session_df = pd.concat(session_data, axis=1)
+        eval_session_df = pd.DataFrame(data=[session_df.mean()])
+        for aeb in util.get_df_aeb_list(eval_session_df):
+            eval_session_df.loc[:, aeb + ('epi',)] = epi
+            eval_session_df.loc[:, aeb + ('total_t',)] = totalt
+        # if eval, save with append mode
+        header = not os.path.exists(filepath)
+        with open(filepath, 'a') as f:
+            eval_session_df.to_csv(f, header=header)
+    else:
+        session_df = pd.concat(session_data, axis=1)
+        util.write(session_df, filepath)
+
+
 def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig):
     '''
     Save the session data: session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
     to read, use:
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
     session_data = util.session_df_to_data(session_df)
     '''
     prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
     if 'retro_analyze' not in os.environ['PREPATH']:
-        session_df = pd.concat(session_data, axis=1)
-        util.write(session_df, f'{prepath}_session_df.csv')
+        save_session_df(session_data, prepath, info_space)
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
-def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
+def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig):
     '''Save the trial data: spec, trial_fitness_df.'''
     prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
+    util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    if util.get_lab_mode() == ('train', 'eval'):
+    if util.get_lab_mode() == 'train':
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
@@ -511,9 +551,10 @@ def analyze_trial(trial):
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
     '''
     logger.info('Analyzing trial')
+    trial_df = calc_trial_df(trial.spec, trial.info_space)
     trial_fitness_df = calc_trial_fitness_df(trial)
     trial_fig = plot_trial(trial.spec, trial.info_space)
-    save_trial_data(trial.spec, trial.info_space, trial_fitness_df, trial_fig)
+    save_trial_data(trial.spec, trial.info_space, trial_df, trial_fitness_df, trial_fig)
     return trial_fitness_df
 
 
@@ -543,10 +584,32 @@ Retro analysis
 '''
 
 
+def analyze_eval_trial(spec, info_space, predir):
+    '''Create a trial and run analysis to get the trial graph and other trial data'''
+    from slm_lab.experiment.control import Trial
+    trial = Trial(spec, info_space)
+    trial.session_data_dict = session_data_dict_from_file(predir, trial.index)
+    analyze_trial(trial)
+
+
+def run_online_eval(spec, info_space, ckpt):
+    '''
+    Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
+    e.g. python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
+    '''
+    prepath_t = util.get_prepath(spec, info_space, unit='trial')
+    prepath_s = util.get_prepath(spec, info_space, unit='session')
+    predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
+    cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
+    logger.info(f'Running online eval for ckpt-{ckpt}')
+    return util.run_cmd(cmd)
+
+
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
+    ckpt_str = '_ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
     for filename in os.listdir(predir):
-        if filename.endswith(f'_t{trial_index}_s{session_index}_session_df.csv'):
+        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
             filepath = f'{predir}/{filename}'
             session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
             session_data = util.session_df_to_data(session_df)
@@ -565,9 +628,10 @@ def session_datas_from_file(predir, trial_spec, trial_index):
 
 def session_data_dict_from_file(predir, trial_index):
     '''Build trial.session_data_dict from file'''
+    ckpt_str = 'ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
     session_data_dict = {}
     for filename in os.listdir(predir):
-        if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
+        if f'_t{trial_index}_' in filename and filename.endswith(f'{ckpt_str}_session_fitness_df.csv'):
             filepath = f'{predir}/{filename}'
             fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
             util.fix_multi_index_dtype(fitness_df)
@@ -597,35 +661,16 @@ def trial_data_dict_from_file(predir):
     return trial_data_dict
 
 
-def mock_spec_info_space(predir, trial_index=None, session_index=None):
-    '''Helper for retro analysis to build mock info_space and spec'''
-    from slm_lab.experiment.monitor import InfoSpace
-    _, _, _, spec_name, experiment_ts, _ = util.prepath_split(predir)
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.set('experiment', 0)
-    if trial_index is None:
-        filepath = f'{predir}/{spec_name}_spec.json'
-    else:
-        info_space.set('trial', trial_index)
-        filepath = f'{predir}/{spec_name}_t{trial_index}_spec.json'
-    if session_index is not None:
-        info_space.set('session', session_index)
-    spec = util.read(filepath)
-    return spec, info_space
-
-
 def retro_analyze_sessions(predir):
     '''Retro-analyze all session level datas.'''
     logger.info('Retro-analyzing sessions from file')
     from slm_lab.experiment.control import Session, SpaceSession
     for filename in os.listdir(predir):
         if filename.endswith('_session_df.csv'):
-            tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
-            trial_index, session_index = int(tn[1:]), int(sn[1:])
-            # mock session
-            spec, info_space = mock_spec_info_space(predir, trial_index, session_index)
-            SessionClass = Session if util.is_singleton(spec) else SpaceSession
+            prepath = f'{predir}/{filename}'.replace('_session_df.csv', '')
+            spec, info_space = util.prepath_to_spec_info_space(prepath)
+            trial_index, session_index = util.prepath_to_idxs(prepath)
+            SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
             session_data = session_data_from_file(predir, trial_index, session_index)
             analyze_session(session, session_data)
@@ -638,10 +683,9 @@ def retro_analyze_trials(predir):
     for filename in os.listdir(predir):
         if filename.endswith('_trial_data.json'):
             filepath = f'{predir}/{filename}'
-            tn = filename.replace('_trial_data.json', '').split('_')[-1]
-            trial_index = int(tn[1:])
-            # mock trial
-            spec, info_space = mock_spec_info_space(predir, trial_index)
+            prepath = filepath.replace('_trial_data.json', '')
+            spec, info_space = util.prepath_to_spec_info_space(prepath)
+            trial_index, _ = util.prepath_to_idxs(prepath)
             trial = Trial(spec, info_space)
             trial.session_data_dict = session_data_dict_from_file(predir, trial_index)
             trial_fitness_df = analyze_trial(trial)
@@ -659,8 +703,9 @@ def retro_analyze_experiment(predir):
     '''Retro-analyze all experiment level datas.'''
     logger.info('Retro-analyzing experiment from file')
     from slm_lab.experiment.control import Experiment
-    # mock experiment
-    spec, info_space = mock_spec_info_space(predir)
+    _, _, _, spec_name, _, _ = util.prepath_split(predir)
+    prepath = f'{predir}/{spec_name}'
+    spec, info_space = util.prepath_to_spec_info_space(prepath)
     experiment = Experiment(spec, info_space)
     experiment.trial_data_dict = trial_data_dict_from_file(predir)
     return analyze_experiment(experiment)
@@ -682,26 +727,3 @@ def retro_analyze(predir):
     retro_analyze_sessions(predir)
     retro_analyze_trials(predir)
     retro_analyze_experiment(predir)
-
-
-def plot_session_from_file(session_df_filepath):
-    '''
-    Method to plot session from its session_df file
-    @example
-
-    from slm_lab.experiment import analysis
-    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
-    analysis.plot_session_from_file(filepath)
-    '''
-    from slm_lab.experiment.monitor import InfoSpace
-    _, _, _, spec_name, _, _ = util.prepath_split(session_df_filepath)
-    session_spec = {'name': spec_name}
-    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
-    session_data = util.session_df_to_data(session_df)
-    tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
-    info_space = InfoSpace()
-    info_space.set('experiment', 0)
-    info_space.set('trial', int(tn[1:]))
-    info_space.set('session', int(sn[1:]))
-    session_fig = plot_session(session_spec, info_space, session_data)
-    viz.save_image(session_fig, session_df_filepath.replace('_session_df.csv', '_session_graph.png'))

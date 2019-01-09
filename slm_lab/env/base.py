@@ -5,6 +5,7 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 
 ENV_DATA_NAMES = ['reward', 'state', 'done']
+NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
 logger = logger.get_logger(__name__)
 
 
@@ -29,14 +30,14 @@ def set_gym_space_attr(gym_space):
 
 
 class Clock:
-    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
+    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0 and epi=0'''
 
     def __init__(self, clock_speed=1):
         self.clock_speed = int(clock_speed)
         self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
-        self.epi = 0
+        self.epi = -1  # offset so epi is 0 when it gets ticked at start
 
     def to_step(self):
         '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
@@ -68,15 +69,17 @@ class BaseEnv(ABC):
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 150,
+      "max_tick": 150,
+      "max_tick_unit": "epi",
       "save_frequency": 50
     }],
 
-    # or using max_total_t
+    # or using total_t
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_total_t": 10000,
+      "max_tick": 10000,
+      "max_tick_unit": "total_t",
       "save_frequency": 50
     }],
     '''
@@ -93,14 +96,19 @@ class BaseEnv(ABC):
         util.set_attr(self, self.env_spec, [
             'name',
             'max_t',
+            'max_tick',
+            'max_tick_unit',
             'save_frequency',
             'reward_scale',
         ])
-        # use either max_epi or max_total_t as std step
-        assert 'max_epi' in self.env_spec or 'max_total_t' in self.env_spec, 'Specify either max_epi or max_total_t'
-        max_tick_unit = 'epi' if 'max_epi' in self.env_spec else 'total_t'
-        self.clock.max_tick_unit = self.max_tick_unit = max_tick_unit
-        self.clock.max_tick = self.max_tick = self.env_spec[f'max_{self.max_tick_unit}']
+        if util.get_lab_mode() == 'eval':
+            # override for eval, offset so epi is 0 - (num_eval_epi - 1)
+            logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
+            self.max_tick = NUM_EVAL_EPI - 1
+            self.max_tick_unit = 'epi'
+        # set max_tick info to clock
+        self.clock.max_tick = self.max_tick
+        self.clock.max_tick_unit = self.max_tick_unit
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''

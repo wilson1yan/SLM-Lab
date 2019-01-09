@@ -27,7 +27,8 @@ class OpenAIEnv(BaseEnv):
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 150,
+      "max_tick": 150,
+      "max_tick_unit": "epi",
       "save_frequency": 50
     }],
     '''
@@ -42,7 +43,8 @@ class OpenAIEnv(BaseEnv):
             if util.get_lab_mode() == 'eval':
                 env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
             else:
-                env = wrap_deepmind(env, stack_len=stack_len)
+                # no reward clipping in training since Atari Memory classes handle it
+                env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
@@ -72,7 +74,7 @@ class OpenAIEnv(BaseEnv):
         if util.to_render():
             self.u_env.render()
         if self.max_t is not None:
-            done = done or self.clock.get('t') > self.max_t
+            done = done or self.clock.t > self.max_t
         self.done = done
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
@@ -115,7 +117,7 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        self.done = done = done or self.clock.get('t') > self.max_t
+        self.done = done = done or self.clock.t > self.max_t
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             reward_e[ab] = reward

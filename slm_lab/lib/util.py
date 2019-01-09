@@ -2,16 +2,13 @@ from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR
 import cv2
-import glob
 import json
-import math
 import numpy as np
 import operator
 import os
 import pandas as pd
 import pydash as ps
 import regex as re
-import shutil
 import subprocess
 import sys
 import torch
@@ -20,7 +17,6 @@ import ujson
 import yaml
 
 NUM_CPUS = mp.cpu_count()
-NUM_EVAL_EPISODES = 100
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -70,6 +66,12 @@ def cast_list(val):
         return [val]
 
 
+def clear_periodic_ckpt(prepath):
+    '''Clear periodic (with -epi) ckpt files in prepath'''
+    if '-epi' in prepath:
+        run_cmd(f'rm {prepath}*')
+
+
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
@@ -98,31 +100,6 @@ def cond_multiget(arr, idxs):
         return arr[idxs]
 
 
-def copy_spec(original_trial_path, new_trial_path):
-    '''Copies spec from original to new directory. Used in eval or enjoy mode.'''
-    source = f'{original_trial_path}_spec.json'
-    dest = f'{new_trial_path}_spec.json'
-    shutil.copy(source, dest)
-
-
-def copy_models(original_session_name, new_trial_name, number_sessions):
-    '''Copies all model data from original_session to new_trial. Duplicates model x number_sessions. Used in eval or enjoy mode.'''
-    for i in range(number_sessions):
-        new_session_name = f'{new_trial_name}_s{i}'
-        files = glob.glob(f'{original_session_name}*')
-        new_files = [re.sub(original_session_name, new_session_name, f) for f in files]
-        for f, nf in zip(files, new_files):
-            shutil.copy(f, nf)
-
-
-def copy_original_models(original_session_name, old_dir, new_dir):
-    '''Copies the original checkpoint to the new directory. Used in eval or enjoy mode.'''
-    files = glob.glob(f'{original_session_name}*')
-    for f in files:
-        nf = re.sub(old_dir, new_dir, f)
-        shutil.copy(f, nf)
-
-
 def count_nonan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
@@ -136,6 +113,16 @@ def downcast_float32(df):
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
+
+
+def find_ckpt(prepath):
+    '''Find the ckpt-lorem-ipsum in a string and return lorem-ipsum'''
+    if 'ckpt' in prepath:
+        ckpt_str = ps.find(prepath.split('_'), lambda s: s.startswith('ckpt'))
+        ckpt = ckpt_str.replace('ckpt-', '')
+    else:
+        ckpt = None
+    return ckpt
 
 
 def flatten_dict(obj, delim='.'):
@@ -244,15 +231,15 @@ def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
-    ckpt = ps.get(info_space, 'ckpt')
     trial_index = info_space.get('trial')
     session_index = info_space.get('session')
     if unit == 'trial':
         prename += f'_t{trial_index}'
     elif unit == 'session':
         prename += f'_t{trial_index}_s{session_index}'
+    ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
-        prename += f'_ckpt{ckpt}'
+        prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'
     return prepath
 
@@ -293,36 +280,6 @@ def is_jupyter():
     return False
 
 
-def is_outlier(points, thres=3.5):
-    '''
-    Detects outliers using MAD modified_z_score method, generalized to work on points.
-    From https://stackoverflow.com/a/22357811/3865298
-    @example
-
-    is_outlier([1, 1, 1])
-    # => array([False, False, False], dtype=bool)
-    is_outlier([1, 1, 2])
-    # => array([False, False,  True], dtype=bool)
-    is_outlier([[1, 1], [1, 1], [1, 2]])
-    # => array([False, False,  True], dtype=bool)
-    '''
-    points = np.array(points)
-    if len(points.shape) == 1:
-        points = points[:, None]
-    median = np.median(points, axis=0)
-    diff = np.sum((points - median)**2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-        return modified_z_score > thres
-
-
-def is_singleton(spec):
-    '''Check if spec uses a singleton Session'''
-    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
-
-
 def monkey_patch(base_cls, extend_cls):
     '''Monkey patch a base class with methods from extend_cls'''
     ext_fn_list = get_fn_list(extend_cls)
@@ -338,47 +295,6 @@ def ndenumerate_nonan(arr):
 def nonan_all(v):
     '''Generic np.all that also returns false if array is all np.nan'''
     return bool(np.all(v) and ~np.all(np.isnan(v)))
-
-
-def override_dev_spec(spec):
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 2
-    return spec
-
-
-def override_enjoy_spec(spec):
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 1
-    return spec
-
-
-def override_eval_spec(spec):
-    spec['meta']['max_session'] = 6
-    spec['meta']['max_trial'] = 1
-    spec['meta']['graph_x'] = 'epi'
-    for agent_spec in spec['agent']:
-        if 'max_size' in agent_spec['memory']:
-            agent_spec['memory']['max_size'] = 1000
-    for env_spec in spec['env']:
-        if 'max_total_t' in env_spec:
-            del env_spec['max_total_t']
-        env_spec['max_epi'] = NUM_EVAL_EPISODES
-    return spec
-
-
-def override_test_spec(spec):
-    for agent_spec in spec['agent']:
-        # covers episodic and timestep
-        agent_spec['algorithm']['training_frequency'] = 1
-        agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_epoch'] = 1
-        agent_spec['algorithm']['training_batch_epoch'] = 1
-    for env_spec in spec['env']:
-        env_spec['max_epi'] = 3
-        env_spec['max_t'] = 20
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 2
-    return spec
 
 
 def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
@@ -398,21 +314,6 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     return results
 
 
-def prepare_directory(new_spec, new_info_space, original_spec, original_info_space, original_prepath):
-    '''Prepares a clean directory to evaluate or enjoy a particular model. Leaves original experiment directory untouched.'''
-    assert new_spec['meta']['max_trial'] == 1
-    predir, _, _, spec_name, _, ckpt = prepath_split(original_prepath)
-    trial, session = prepath_to_idxs(original_prepath)
-    new_prepath = get_prepath(new_spec, new_info_space, 'experiment')
-    new_predir, _, _, _, _, _ = prepath_split(new_prepath)
-    new_trial_name = f'{new_prepath}_t0'
-    original_trial_name = f'{predir}/{spec_name}_t{trial}'
-    original_session_name = f'{original_trial_name}_s{session}_ckpt{ckpt}'
-    copy_spec(original_trial_name, new_trial_name)
-    copy_original_models(original_session_name, predir, new_predir)
-    copy_models(original_session_name, new_trial_name, new_spec['meta']['max_session'])
-
-
 def prepath_split(prepath):
     '''
     Split prepath into useful names. Works with predir (prename will be None)
@@ -422,17 +323,14 @@ def prepath_split(prepath):
     prename: dqn_pong_t0_s0
     spec_name: dqn_pong
     experiment_ts: 2018_12_02_082510
-    ckpt: ckptbest of dqn_pong_t0_s0_ckptbest if available
+    ckpt: ckpt-best of dqn_pong_t0_s0_ckpt-best if available
     '''
     prepath = prepath.strip('_')
     tail = prepath.split('data/')[-1]
-    if '_ckpt' in tail:
-        ckpt_chunk = ps.find(tail.split('_'), lambda s: s.startswith('ckpt'))
-        tail = tail.replace(f'_{ckpt_chunk}', '')
-        ckpt = ckpt_chunk.replace('ckpt', '')
-    else:
-        ckpt = None
-    if '/' in tail:
+    ckpt = find_ckpt(tail)
+    if ckpt is not None:  # separate ckpt
+        tail = tail.replace(f'_ckpt-{ckpt}', '')
+    if '/' in tail:  # tail = prefolder/prename
         prefolder, prename = tail.split('/')
     else:
         prefolder, prename = tail, None
@@ -463,8 +361,10 @@ def prepath_to_idxs(prepath):
 def prepath_to_spec(prepath):
     '''Create spec from prepath such that it returns the same prepath with info_space'''
     predir, _, prename, _, _, _ = prepath_split(prepath)
-    prename_no_s = '_'.join(prename.split('_')[:-1])
-    spec_path = f'{predir}/{prename_no_s}_spec.json'
+    sidx_res = re.search('_s\d+', prename)
+    if sidx_res:  # replace the _s0 if any
+        prename = prename.replace(sidx_res[0], '')
+    spec_path = f'{predir}/{prename}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
     return spec
@@ -556,6 +456,24 @@ def read_as_plain(data_path, **kwargs):
     return data
 
 
+def run_cmd(cmd):
+    '''Run shell command'''
+    print(f'+ {cmd}')
+    proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    return proc
+
+
+def run_cmd_wait(proc):
+    '''Wait on a running process created by util.run_cmd and print its stdout'''
+    for line in proc.stdout:
+        print(line.decode(), end='')
+    output = proc.communicate()[0]
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.args, proc.returncode, output)
+    else:
+        return output
+
+
 def s_get(cls, attr_path):
     '''
     Method to get attribute across space via inferring agent <-> env paths.
@@ -636,9 +554,9 @@ def set_rand_seed(random_seed, env_space):
             pass
 
 
-def set_session_logger(spec, info_space, logger):
-    '''Set the logger for a session give its spec and info_space'''
-    os.environ['PREPATH'] = get_prepath(spec, info_space, unit='session')
+def set_logger(spec, info_space, logger, unit=None):
+    '''Set the logger for a lab unit give its spec and info_space'''
+    os.environ['PREPATH'] = get_prepath(spec, info_space, unit=unit)
     reload(logger)  # to set session-specific logger
 
 
@@ -698,11 +616,6 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
-def to_one_hot(data, max_val):
-    '''Convert an int list of data into one-hot vectors'''
-    return np.eye(max_val)[np.array(data)]
-
-
 def to_render():
     return get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true'
 
@@ -728,12 +641,12 @@ def try_set_cuda_id(spec, info_space):
     trial_idx = info_space.get('trial') or 0
     session_idx = info_space.get('session') or 0
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
+    job_idx += int(os.environ.get('CUDA_ID_OFFSET', 0))
     device_count = torch.cuda.device_count()
     if device_count == 0:
         cuda_id = None
     else:
         cuda_id = job_idx % device_count
-        cuda_id += int(os.environ.get('CUDA_ID_OFFSET', 0))
 
     for agent_spec in spec['agent']:
         agent_spec['net']['cuda_id'] = cuda_id
@@ -809,7 +722,8 @@ def crop_image(im):
 
 
 def normalize_image(im):
-    # NOTE: beware in its application, may cause loss to be 256 times lower due to smaller input values
+    '''Normalizing image by dividing max value 255'''
+    # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 

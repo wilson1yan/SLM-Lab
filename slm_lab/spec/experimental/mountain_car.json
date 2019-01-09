@@ -52,7 +52,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -150,7 +151,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -239,7 +241,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -332,7 +335,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -422,7 +426,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -518,7 +523,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -611,7 +617,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {
@@ -707,7 +714,8 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_total_t": 400000,
+      "max_tick": 400000,
+      "max_tick_unit": "total_t",
       "save_frequency": 25000,
     }],
     "body": {

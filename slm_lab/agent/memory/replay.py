@@ -300,16 +300,20 @@ class AtariReplay(Replay):
         self.states_shape = self.scalar_shape
         self.states = [None] * self.max_size
 
+    def add_experience(self, state, action, reward, next_state, done):
+        # clip reward, done here to minimize change to only training data data
+        super(AtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
+
 
 class ImageReplay(Replay):
     '''
     An off policy replay buffer that normalizes (preprocesses) images through
-    division by 256 and subtraction of 0.5.
+    division by 255 and subtraction of 0.5.
     '''
 
     def __init__(self, memory_spec, body):
         super(ImageReplay, self).__init__(memory_spec, body)
 
     def preprocess_state(self, state, append=True):
-        state = (state.astype('float32') / 256.) - 0.5
+        state = util.normalize_image(state) - 0.5
         return state

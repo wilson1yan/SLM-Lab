@@ -28,6 +28,8 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_t": (type(None), int),
+        "max_tick": int,
+        "max_tick_unit": str,
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
@@ -113,11 +115,16 @@ def get(spec_file, spec_name):
 
     spec = spec_util.get('base.json', 'base_case_openai')
     '''
-    spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
-    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
-    spec = spec_dict[spec_name]
-    spec['name'] = spec_name
-    spec['git_SHA'] = util.get_git_sha()
+    if 'data/' in spec_file:
+        assert spec_name in spec_file, 'spec_file in data/ must be lab-generated and contains spec_name'
+        spec = util.read(spec_file)
+    else:
+        spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
+        spec_dict = util.read(spec_file)
+        assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
+        spec = spec_dict[spec_name]
+        spec['name'] = spec_name
+        spec['git_SHA'] = util.get_git_sha()
     check(spec)
     return spec
 
@@ -135,6 +142,47 @@ def is_aeb_compact(aeb_list):
         b_compact = b_compact and np.array_equal(b_shape, b_uniq)
     aeb_compact = ae_compact and b_compact
     return aeb_compact
+
+
+def is_singleton(spec):
+    '''Check if spec uses a singleton Session'''
+    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
+
+
+def override_dev_spec(spec):
+    spec['meta']['max_session'] = 1
+    spec['meta']['max_trial'] = 2
+    return spec
+
+
+def override_enjoy_spec(spec):
+    spec['meta']['max_session'] = 1
+    return spec
+
+
+def override_eval_spec(spec):
+    for agent_spec in spec['agent']:
+        if 'max_size' in agent_spec['memory']:
+            agent_spec['memory']['max_size'] = 100
+    # evaluate by episode is set in env clock init in env/base.py
+    return spec
+
+
+def override_test_spec(spec):
+    for agent_spec in spec['agent']:
+        # covers episodic and timestep
+        agent_spec['algorithm']['training_frequency'] = 1
+        agent_spec['algorithm']['training_start_step'] = 1
+        agent_spec['algorithm']['training_epoch'] = 1
+        agent_spec['algorithm']['training_batch_epoch'] = 1
+    for env_spec in spec['env']:
+        env_spec['max_t'] = 20
+        env_spec['max_tick'] = 3
+        env_spec['max_tick_unit'] = 'epi'
+        env_spec['save_frequency'] = 1000
+    spec['meta']['max_session'] = 1
+    spec['meta']['max_trial'] = 2
+    return spec
 
 
 def resolve_aeb(spec):

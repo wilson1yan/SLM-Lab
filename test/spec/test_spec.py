@@ -12,7 +12,7 @@ import sys
 # helper method to run all tests in test_spec
 def run_trial_test(spec_file, spec_name=False):
     spec = spec_util.get(spec_file, spec_name)
-    spec = util.override_test_spec(spec)
+    spec = spec_util.override_test_spec(spec)
     info_space = InfoSpace()
     info_space.tick('trial')
     trial = Trial(spec, info_space)
@@ -188,7 +188,7 @@ def test_hydra_dqn(spec_file, spec_name):
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/dqn.json', 'dqn_pong'),
-    ('experimental/a2c.json', 'a2c_pong'),
+    # ('experimental/a2c.json', 'a2c_pong'),
 ])
 def test_atari(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

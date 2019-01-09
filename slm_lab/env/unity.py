@@ -49,7 +49,8 @@ class UnityEnv(BaseEnv):
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_epi": 3,
+      "max_tick": 3,
+      "max_tick_unit": "epi",
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
@@ -141,7 +142,7 @@ class UnityEnv(BaseEnv):
         reward = env_info_a.rewards[b] * self.reward_scale
         state = env_info_a.states[b]
         done = env_info_a.local_done[b]
-        self.done = done = done or self.clock.get('t') > self.max_t
+        self.done = done = done or self.clock.t > self.max_t
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
 
@@ -187,6 +188,6 @@ class UnityEnv(BaseEnv):
             reward_e[(a, b)] = env_info_a.rewards[b] * self.reward_scale
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
-        self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_t)
+        self.done = (util.nonan_all(done_e) or self.clock.t > self.max_t)
         logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
         return reward_e, state_e, done_e
