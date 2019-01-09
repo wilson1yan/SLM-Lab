@@ -72,17 +72,18 @@
         },
         "net": {
           "init_fn__choice": [null, "xavier_uniform_", "orthogonal_"],
-          "milestones__choice": [
-            [50000],
-            [60000],
-            [35000, 70000],
-            [40000, 80000],
-            [45000, 90000],
-            [50000, 100000]
-          ],
-          "gamma__uniform": [0.1, 0.9]
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [50000],
+              [60000],
+              [35000, 70000],
+              [40000, 80000],
+              [45000, 90000],
+              [50000, 100000]
+            ],
+            "gamma__uniform": [0.1, 0.9],
           },
-          "actor_optim_spec": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.01],
           },
         }
@@ -175,9 +176,9 @@
               [45000, 90000],
               [50000, 100000]
             ],
-            "gamma__uniform": [0.1, 0.9]
+            "gamma__uniform": [0.1, 0.9],
           },
-          "actor_optim_spec": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.01],
           },
         }
