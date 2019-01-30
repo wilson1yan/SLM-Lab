@@ -29,7 +29,7 @@ class RecurrentNet(Net, nn.Module):
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
-        "bidirectional": False,
+        "bidirectional": false,
         "seq_len": 4,
         "init_fn": "xavier_uniform_",
         "clip_grad_val": 1.0,
