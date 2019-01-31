@@ -118,6 +118,13 @@ class ConvRecurrentNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
+
+        # conv layer
+        self.conv_model = self.build_conv_layers(self.conv_hid_layers)
+        self.conv_out_dim = self.get_conv_output_size()
+
+        print(self.conv_out_dim)
+
         # fc layer: state processing model
         if not ps.is_empty(self.fc_hid_layers):
             fc_dims = [self.in_dim] + self.fc_hid_layers
@@ -147,7 +154,7 @@ class ConvRecurrentNet(Net, nn.Module):
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def __str__(self):
-        return super(RecurrentNet, self).__str__() + f'\noptim: {self.optim}'
+        return super(ConvRecurrentNet, self).__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''
