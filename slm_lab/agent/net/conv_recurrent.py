@@ -79,9 +79,8 @@ class ConvRecurrentNet(Net, nn.Module):
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
-        print(in_dim, out_dim)
         nn.Module.__init__(self)
-        super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
+        super(ConvRecurrentNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             cell_type='GRU',
@@ -99,11 +98,10 @@ class ConvRecurrentNet(Net, nn.Module):
         ))
         util.set_attr(self, self.net_spec, [
             'conv_hid_layers',
-            'hid_conv_activation',
+            'hid_layers_activation',
             'batch_norm',
             'cell_type',
             'fc_hid_layers',
-            'hid_recurrent_activation',
             'rnn_hidden_size',
             'rnn_num_layers',
             'bidirectional',
@@ -123,15 +121,7 @@ class ConvRecurrentNet(Net, nn.Module):
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
         self.conv_out_dim = self.get_conv_output_size()
 
-        print(self.conv_out_dim)
-
-        # fc layer: state processing model
-        if not ps.is_empty(self.fc_hid_layers):
-            fc_dims = [self.in_dim] + self.fc_hid_layers
-            self.fc_model = net_util.build_sequential(fc_dims, self.hid_layers_activation)
-            self.rnn_input_dim = fc_dims[-1]
-        else:
-            self.rnn_input_dim = self.in_dim
+        self.rnn_input_dim = self.conv_out_dim
 
         # RNN model
         self.rnn_model = getattr(nn, self.cell_type)(
@@ -156,13 +146,40 @@ class ConvRecurrentNet(Net, nn.Module):
     def __str__(self):
         return super(ConvRecurrentNet, self).__str__() + f'\noptim: {self.optim}'
 
+
+    def get_conv_output_size(self):
+        '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
+        with torch.no_grad():
+            x = torch.ones(1, 1,  *self.in_dim[1:])
+            x = self.conv_model(x)
+            return x.numel()
+
+    def build_conv_layers(self, conv_hid_layers):
+        '''
+        Builds all of the convolutional layers in the network and store in a Sequential model
+        '''
+        conv_layers = []
+        in_d = 1  # input channel
+        for i, hid_layer in enumerate(conv_hid_layers):
+            hid_layer = [tuple(e) if ps.is_list(e) else e for e in hid_layer]  # guard list-to-tuple
+            # hid_layer = out_d, kernel, stride, padding, dilation
+            conv_layers.append(nn.Conv2d(in_d, *hid_layer))
+            conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
+            # Don't include batch norm in the first layer
+            if self.batch_norm and i != 0:
+                conv_layers.append(nn.BatchNorm2d(in_d))
+            in_d = hid_layer[0]  # update to out_d
+        conv_model = nn.Sequential(*conv_layers)
+        return conv_model
+
     def forward(self, x):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''
         # Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs
         batch_size = x.size(0)
-        x = x.view(-1, self.in_dim)
-        if hasattr(self, 'fc_model'):
-            x = self.fc_model(x)
+        x = x.view(-1, 1, *self.in_dim[1:])
+        x = self.conv_model(x)
+        x = x.view(batch_size * self.seq_len, -1)
+
         # Restack to batch_size x seq_len x rnn_input_dim
         x = x.view(-1, self.seq_len, self.rnn_input_dim)
         if self.cell_type == 'LSTM':
