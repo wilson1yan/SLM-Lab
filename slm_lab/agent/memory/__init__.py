@@ -7,3 +7,4 @@ Contains different ways of storing an agents experiences and sampling from them
 from .replay import *
 from .onpolicy import *
 from .prioritized import *
+from .dummy import *

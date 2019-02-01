@@ -171,6 +171,9 @@ class ConvNet(Net, nn.Module):
         The feedforward step
         Note that PyTorch takes (c,w,h) but gym provides (w,h,c), so preprocessing must be done before passing to network
         '''
+        print(x[0])
+        1/0
+
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
         if hasattr(self, 'fc_model'):

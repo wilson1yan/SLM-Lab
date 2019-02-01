@@ -49,7 +49,7 @@ class Session:
         clock = env.clock
         tick = clock.get(env.max_tick_unit)
         to_ckpt = False
-        print("tick", tick, "save freq", env.save_frequency)
+        # print("tick", tick, "save freq", env.save_frequency)
         if util.get_lab_mode() not in ('enjoy', 'eval') and tick <= env.max_tick:
             to_ckpt = (tick % env.save_frequency == 0) or tick == env.max_tick
         if env.max_tick_unit == 'epi':  # extra condition for epi

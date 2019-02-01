@@ -22,11 +22,9 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "FixedAtariReplay",
+        "name": "DummySeqReplay",
         "batch_size": 32,
-        "max_size": 6000000,
-        "stack_len": 4,
-        "use_cer": false,
+        "seq_len": 4,
         "game": "breakout",
       },
       "net": {
