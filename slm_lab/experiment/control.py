@@ -38,6 +38,8 @@ class Session:
         util.try_set_cuda_id(self.spec, self.info_space)
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
+        self.sim_env = spec['sim_env']
+
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
@@ -47,6 +49,7 @@ class Session:
         clock = env.clock
         tick = clock.get(env.max_tick_unit)
         to_ckpt = False
+        print("tick", tick, "save freq", env.save_frequency)
         if util.get_lab_mode() not in ('enjoy', 'eval') and tick <= env.max_tick:
             to_ckpt = (tick % env.save_frequency == 0) or tick == env.max_tick
         if env.max_tick_unit == 'epi':  # extra condition for epi
@@ -78,6 +81,10 @@ class Session:
         self.try_ckpt(self.agent, self.env)  # final timestep ckpt
         self.agent.body.log_summary()
 
+    def run_train(self):
+        self.env.clock.tick('t')
+        self.agent.update(None, None, None, None)
+
     def close(self):
         '''
         Close session and clean up.
@@ -89,7 +96,10 @@ class Session:
 
     def run(self):
         while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
-            self.run_episode()
+            if self.sim_env:
+                self.run_episode()
+            else:
+                self.run_train()
             if util.get_lab_mode() not in ('enjoy', 'eval') and analysis.all_solved(self.agent):
                 logger.info('All environments solved. Early exit.')
                 break

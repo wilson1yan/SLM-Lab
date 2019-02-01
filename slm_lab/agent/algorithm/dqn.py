@@ -93,6 +93,7 @@ class VanillaDQN(SARSA):
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         q_preds = self.net.wrap_eval(batch['states'])
+        # q_preds = self.net(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         next_q_preds = self.net.wrap_eval(batch['next_states'])
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
@@ -105,6 +106,7 @@ class VanillaDQN(SARSA):
         if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
             errors = torch.abs(max_q_targets - act_q_preds.detach())
             self.body.memory.update_priorities(errors)
+
         return q_loss
 
     @lab_api
@@ -196,7 +198,7 @@ class DQNBase(VanillaDQN):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net.wrap_eval(batch['states'])
+        q_preds = self.net(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         # Use online_net to select actions in next state
         online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])

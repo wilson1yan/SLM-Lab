@@ -174,6 +174,7 @@ class ConvRecurrentNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''
+        print('data', x.size())
         # Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs
         batch_size = x.size(0)
         x = x.view(-1, 1, *self.in_dim[1:])

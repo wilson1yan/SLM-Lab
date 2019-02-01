@@ -1,8 +1,10 @@
 from collections import deque
+import os
 from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
+from slm_lab.env.wrapper import LazyFrames
 import numpy as np
 import pydash as ps
 
@@ -304,6 +306,38 @@ class AtariReplay(Replay):
         # clip reward, done here to minimize change to only training data data
         super(AtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
 
+class FixedAtariReplay(Replay):
+    def __init__(self, memory_spec, body):
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',
+            'use_cer',
+            'game',
+        ])
+        Replay.__init__(self, memory_spec, body)
+        self.states_shape = self.scalar_shape
+        self.states = [None] * self.max_size
+
+        self._accept_data = True
+
+        data_folder = os.path.join('data', self.game)
+        actions = np.load(os.path.join(data_folder, '{}_actions.npy'))
+        dones = np.load(os.path.join(data_folder, '{}_dones.npy'))
+        rewards = np.load(os.path.join(data_folder, '{}_rewards.npy'))
+        states = np.load(os.path.join(data_folder, '{}_states.npy'))
+
+        for i in range(states.shape[0]):
+            state = LazyFrames(states[i])
+            self.add_experience(state, actions[i], rewards[i],
+                                self.last_state, dones[i])
+            self.last_state = state
+
+        self._accept_data = False
+
+    def add_experience(self, state, action, reward, next_state, done):
+        if self._accept_data:
+            super(AtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
 
 class ImageReplay(Replay):
     '''

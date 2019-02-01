@@ -1,5 +1,6 @@
 {
   "dqn_rnn_pong": {
+    "sim_env": false,
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -21,11 +22,12 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "FixedAtariReplay",
         "batch_size": 32,
-        "max_size": 250000,
+        "max_size": 6000000,
         "stack_len": 4,
-        "use_cer": false
+        "use_cer": false,
+        "game": "breakout",
       },
       "net": {
           "type": "ConvRecurrentNet",
@@ -50,7 +52,7 @@
           },
           "optim_spec": {
             "name": "Adam",
-            "lr": 0.01
+            "lr": 2.5e-4
           },
           "lr_scheduler_spec": {
               "name": "StepLR",
