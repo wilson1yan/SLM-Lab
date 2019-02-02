@@ -5,7 +5,7 @@ import torch
 from slm_lab.lib import util
 from slm_lab.lib.decorator import lab_api
 
-class DummySequReplay(object):
+class DummySeqReplay(object):
 
     def __init__(self, memory_spec, body):
         util.set_attr(self, memory_spec, [
@@ -18,7 +18,7 @@ class DummySequReplay(object):
         self.clip_reward = clip_reward
         self.seq_len = seq_len
 
-        data_folder = os.path.join('data', 'experience', self.game)
+        data_folder = join('data', 'experience', self.game)
         self.episode_intervals, self.data = self.load_episodes(data_folder, self.game)
 
         valid_seq_idx_ranges = list()
@@ -33,6 +33,7 @@ class DummySequReplay(object):
                                       for start, end in self.valid_seq_idx_ranges]
 
         self.total_reward = 0
+        self.is_episodic = False
 
     def load_data(self, data_path, game):
         states = np.load(join(data_path, "{}_states.npy".format(game)))
@@ -84,11 +85,11 @@ class DummySequReplay(object):
                                            for i in next_idxs])
 
         return {
-            'states': torch.FloatTensor(state_batch),
-            'actions': torch.FloatTensor(action_batch),
-            'rewards': torch.FloatTensor(reward_batch),
-            'dones': torch.FloatTensor(dones_batch),
-            'next_states': torch.FloatTensor(next_state_batch)
+            'states': state_batch,
+            'actions': action_batch,
+            'rewards': reward_batch,
+            'dones': dones_batch,
+            'next_states': next_state_batch
         }
 
     @lab_api
@@ -104,8 +105,8 @@ class DummyReplay(object):
             'stack_len',
             'game'
         ])
-        data_folder = os.path.join('data', 'experience', self.game)
-        self.data = self.load_data(data_path, game)
+        data_folder = join('data', 'experience', self.game)
+        self.data = self.load_data(data_folder, self.game)
 
         states, _, _, dones = self.data
         frame_valid = np.zeros((len(states), self.stack_len))
@@ -119,6 +120,7 @@ class DummyReplay(object):
         self.frame_valid = frame_valid
 
         self.total_reward = 0
+        self.is_episodic = False
 
     def load_data(self, data_path, game):
         states = np.load(join(data_path, "{}_states.npy".format(game)))
@@ -174,12 +176,15 @@ class DummyReplay(object):
                                                          next_state_batch.shape[2],
                                                          next_state_batch.shape[3]))
 
+        state_batch = np.random.rand(self.batch_size, 4, 84, 84)
+        next_state_batch = np.random.rand(self.batch_size, 4, 84, 84)
+
         return {
-            'states': torch.FloatTensor(state_batch),
-            'actions': torch.FloatTensor(action_batch),
-            'rewards': torch.FloatTensor(reward_batch),
-            'dones': torch.FloatTensor(dones_batch),
-            'next_states': torch.FloatTensor(next_state_batch)
+            'states': state_batch,
+            'actions': action_batch,
+            'rewards': reward_batch,
+            'dones': dones_batch,
+            'next_states': next_state_batch
         }
 
     @lab_api

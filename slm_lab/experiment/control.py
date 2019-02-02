@@ -84,6 +84,9 @@ class Session:
     def run_train(self):
         self.env.clock.tick('t')
         self.agent.update(None, None, None, None)
+        tick = self.env.clock.get(self.env.max_tick_unit)
+        if tick % 1e3 == 0:
+            logger.info(f"Completed {tick} training iterations")
 
     def close(self):
         '''

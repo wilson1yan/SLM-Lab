@@ -26,7 +26,7 @@
         "batch_size": 32,
         "include_time_dim": false,
         "stack_len": 4,
-        "game": "breakout",
+        "game": "breakout_small",
       },
       "net": {
         "type": "ConvNet",
@@ -53,15 +53,15 @@
         "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 10000,
-        "gpu": false
+        "gpu": true
       }
     }],
     "env": [{
       "name": "BreakoutNoFrameskip-v4",
       "max_t": null,
       "max_tick_unit": "total_t",
-      "max_tick": 10000000,
-      "save_frequency": 100000
+      "max_tick": 600000,
+      "save_frequency": 5000
     }],
     "body": {
       "product": "outer",
@@ -74,7 +74,7 @@
       "training_eval": true,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 2
+        "num_cpus": 16
       }
     }
   }
